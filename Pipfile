@@ -1,0 +1,20 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+numpy = "*"
+pyyaml = "*"
+attrs = "*"
+future = "*"
+opencv-python = "*"
+scandir = "*"
+matplotlib = "*"
+gym = {version = "*"}
+joblib = "*"
+
+[requires]
+python_version = "2.7"
