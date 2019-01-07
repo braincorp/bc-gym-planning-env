@@ -6,9 +6,8 @@ from __future__ import division
 import numpy as np
 import time
 
-from bc_gym_planning_env.envs import (
-    EnvParams, PlanEnv, generate_trajectory_and_map_from_config, example_config
-)
+from bc_gym_planning_env.envs.internals.maps import example_config, generate_trajectory_and_map_from_config
+from bc_gym_planning_env import EnvParams, PlanEnv
 
 
 if __name__ == '__main__':

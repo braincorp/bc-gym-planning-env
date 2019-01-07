@@ -5,7 +5,7 @@ from __future__ import division
 import numpy as np
 import time
 
-from bc_gym_planning_env.envs import EnvParams, PlanEnv
+from bc_gym_planning_env import EnvParams, PlanEnv
 from bc_gym_planning_env.envs.rw_corridors.tdwa_test_environments import \
     get_random_maps_squeeze_between_obstacle_in_corridor_on_path
 
