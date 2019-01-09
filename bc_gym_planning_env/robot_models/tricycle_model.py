@@ -25,6 +25,33 @@ def vw_from_front_wheel_velocity(front_wheel_velocity, front_wheel_angle, front_
     return v, w
 
 
+def tricycle_kinematic_step(pose, current_wheel_angle, dt, control_signals, max_front_wheel_angle, front_wheel_from_axis,
+                            max_front_wheel_speed, front_column_p_gain, model_front_column_pid=True):
+    '''
+    :param pose: ... x 3  (x, y, angle)
+    :param pose: ... x 1  (wheel_angle)
+    :param dt: integration timestep
+    :param control_signals: ... x 2 (wheel_v, wheel_angle) controls
+    :return: ... x 3 pose and ... x 1 state (wheel_angle) after one timestep
+    '''
+    # rotate the front wheel first
+    if model_front_column_pid:
+        new_wheel_angle = tricycle_front_wheel_column_step(
+            current_wheel_angle, control_signals[:, 1],
+            max_front_wheel_angle, max_front_wheel_speed, front_column_p_gain,
+            dt
+        )
+    else:
+        new_wheel_angle = np.clip(control_signals[:, 1], -max_front_wheel_angle, max_front_wheel_angle)
+
+    desired_wheel_v = control_signals[:, 0]
+    linear_velocity = desired_wheel_v * np.cos(new_wheel_angle)
+    angular_velocity = desired_wheel_v * np.sin(new_wheel_angle) / front_wheel_from_axis
+
+    pose_result = kinematic_body_pose_motion_step(pose, linear_velocity, angular_velocity, dt)
+    return pose_result, new_wheel_angle
+
+
 def tricycle_dynamic_step(
         pose, current_wheel_angle, current_v, current_w, dt, control_signals,
         max_front_wheel_angle, front_wheel_from_axis, max_front_wheel_speed,
