@@ -54,3 +54,30 @@ def extract_egocentric_costmap(costmap_2d, ego_position_in_world,
 
     return CostMap2D(rotated_data, costmap_2d.get_resolution(),
                      origin=resulting_origin)
+
+
+def rotate_costmap(costmap, angle, center_pixel_coords=None, border_value=0):
+    '''
+    :param costmap: the 2d numpy array (the data of a costmap)
+    :param angle: angle to rotate (in radians, world coordinates - positive angle is anticlockwise)
+    :param border_value: value to fill in when rotating
+    :param center_pixel_coords: center of rotation in the pixel coordinates (None for center of the image)
+    :return: the rotated mat
+    '''
+    # opencv uses image coordintates, we use world coordinates
+    deg_angle = np.rad2deg(-angle)
+    if (deg_angle != 0.):
+        if center_pixel_coords is None:
+            rows, cols = costmap.shape[:2]
+            center_pixel_coords = (cols // 2, rows // 2)
+        else:
+            center_pixel_coords = tuple(center_pixel_coords)
+        rot_mat = cv2.getRotationMatrix2D(center_pixel_coords, deg_angle, 1)
+        with single_threaded_opencv():
+            rotated_costmap = cv2.warpAffine(costmap, rot_mat, (costmap.shape[1], costmap.shape[0]),
+                                             # this mode doesn't change the value of pixels during rotation
+                                             flags=cv2.INTER_NEAREST,
+                                             borderValue=border_value)
+        return rotated_costmap
+    else:
+        return costmap.copy()
