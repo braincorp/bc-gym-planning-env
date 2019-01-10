@@ -6,7 +6,7 @@ import cv2
 
 from bc_gym_planning_env.utilities.costmap_2d_python import CostMap2D
 from bc_gym_planning_env.utilities.opencv_utils import single_threaded_opencv
-from bc_gym_planning_env.utilities.path_tools import world_to_pixel
+from bc_gym_planning_env.utilities.path_tools import world_to_pixel, get_pixel_footprint, get_blit_values
 
 
 def extract_egocentric_costmap(costmap_2d, ego_position_in_world,
@@ -81,3 +81,28 @@ def rotate_costmap(costmap, angle, center_pixel_coords=None, border_value=0):
         return rotated_costmap
     else:
         return costmap.copy()
+
+
+def is_obstacle(costmap, world_x, world_y, orientation=None, footprint=None):
+    """
+    Check costmap for obstacle at (world_x, world_y)
+    If orientation is None, obstacle detection will check only the inscribed-radius
+    distance collision. This means that, if the robot is not circular,
+    there may be an undetected orientation-dependent collision.
+    If orientation is given, footprint must also be given, and should be the same
+    used by the costmap to inflate costs. Proper collision detection will
+    then be done.
+    """
+    # convert to costmap coordinate system:
+    map_x, map_y = costmap.world_to_pixel(np.array([world_x, world_y]))
+    if not costmap.in_bounds(map_x, map_y):
+        return False
+    cost = costmap.get_data()[map_y, map_x]
+    if (cost in [CostMap2D.LETHAL_OBSTACLE]):
+        return True
+    if orientation is None:  # only checking orientation-independent collision
+        return False
+    # Now check for orientation-dependent collision
+    fp = get_pixel_footprint(orientation, footprint, costmap.get_resolution(), fill=True)
+    values = get_blit_values(fp, costmap.get_data(), map_x, map_y)
+    return np.any(values == CostMap2D.LETHAL_OBSTACLE)
