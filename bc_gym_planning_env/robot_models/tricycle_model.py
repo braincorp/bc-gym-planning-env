@@ -236,21 +236,32 @@ class TricycleRobot(IRobot):
         '''
         step when control signals are wheel linear speed and wheel angle
         '''
-        new_poses, new_wheel_angles, _, _ =\
-            tricycle_dynamic_step(
+        # new_poses, new_wheel_angles, new_robot_vs, new_robot_ws =\
+        #     tricycle_dynamic_step(
+        #         np.array([[self._x, self._y, self._angle]]),
+        #         [self._wheel_angle], [self._measured_v], [self._measured_w],
+        #         dt, np.array([control_signals]),
+        #         self.get_max_front_wheel_angle(),
+        #         self.get_front_wheel_from_axis_distance(),
+        #         self.get_max_front_wheel_speed(),
+        #         self.get_max_linear_acceleration(),
+        #         self.get_max_angular_acceleration(),
+        #         self.get_front_column_model_p_gain(),
+        #         self._noise_parameters
+        #     )
+
+        # pose, current_wheel_angle, dt, control_signals, max_front_wheel_angle, front_wheel_from_axis,
+        # max_front_wheel_speed, front_column_p_gain
+
+        new_poses, new_wheel_angles =\
+            tricycle_kinematic_step(
                 np.array([[self._x, self._y, self._angle]]),
                 [self._wheel_angle],
-                [self._measured_v],
-                [self._measured_w],
-                dt,
-                np.array([control_signals]),
+                dt, np.array([control_signals]),
                 self.get_max_front_wheel_angle(),
                 self.get_front_wheel_from_axis_distance(),
                 self.get_max_front_wheel_speed(),
-                self.get_max_linear_acceleration(),
-                self.get_max_angular_acceleration(),
-                self.get_front_column_model_p_gain(),
-                self._noise_parameters
+                self.get_front_column_model_p_gain()
             )
 
         (self._x, self._y, self._angle), self._wheel_angle = new_poses[0], new_wheel_angles[0]
