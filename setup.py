@@ -8,13 +8,13 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 setup(
-    name='sparse_rrt',
+    name='bc_gym_planning_env',
     version='0.0.1',
-    description='Sparse stable trees planner',
+    description='Brain Corp planning environments for OpenAI Gym',
     long_description=long_description,
     author='Oleg Sinyavskiy',
     author_email='olegsinyavskiy@gmail.com',
-    url='https://github.com/olegsinyavskiy/sparse_rrt',
+    url='https://github.com/braincorp/bc_gym_planning_env',
     download_url='',
     license='Braincorp',
     install_requires=['numpy>=1.13.3',
