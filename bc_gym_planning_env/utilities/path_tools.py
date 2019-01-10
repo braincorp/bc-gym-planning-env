@@ -461,3 +461,11 @@ def inscribed_radius(footprint):
     '''
     segment_ends = np.roll(footprint, -1, axis=0)
     return np.amin(distance_to_segments((0, 0), footprint, segment_ends))
+
+
+def circumscribed_radius(footprint):
+    '''
+    Returns the longest distance from (0, 0) to any of the sides
+    of a footprint (n x 2 numpy array of consecutive vertices)
+    '''
+    return np.amax(np.linalg.norm(footprint, axis=1))

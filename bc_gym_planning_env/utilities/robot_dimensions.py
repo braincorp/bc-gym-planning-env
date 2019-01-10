@@ -46,6 +46,13 @@ class IDimensions(object):
         :return: An array of (x,y) points representing the robot's footprint for the given footprint modifier.
         """
 
+    @staticmethod
+    @abstractmethod
+    def footprint_corner_indices():
+        """
+        :return: An array of length 4 containing the indices of the footprint array which are the footprint's corners.
+        """
+
 
 class IndustrialDiffdriveV1Dimensions(IDimensions):
     @staticmethod
@@ -99,6 +106,11 @@ class IndustrialDiffdriveV1Dimensions(IDimensions):
     @staticmethod
     def footprint_height():
         return 1.20
+
+    @staticmethod
+    def footprint_corner_indices():
+        corner_indices = np.array([4, 11, 17, 24])
+        return corner_indices
 
 
 class IndustrialTricycleV1Dimensions(IDimensions):
@@ -154,3 +166,8 @@ class IndustrialTricycleV1Dimensions(IDimensions):
         ]) / 1000.
         assert(footprint[0, 1] == 0)  # bumper front-center has to be the first one (just so that everything is correct)
         return footprint
+
+    @staticmethod
+    def footprint_corner_indices():
+        corner_indices = np.array([2, 5, 10, 14])
+        return corner_indices
