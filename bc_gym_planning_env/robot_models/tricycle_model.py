@@ -156,6 +156,7 @@ class TricycleRobot(IRobot):
         self._measured_v = 0.
         self._measured_w = 0.
         self._steering_motor_command = 0.
+        self._model_front_column_pid = True
 
         self._angle = 0.
         self._last_pose = (self._x, self._y, self._angle)
@@ -172,6 +173,9 @@ class TricycleRobot(IRobot):
         }
 
         self._dimensions = get_dimensions_by_name(robots_type_name)
+
+    def enable_model_front_column_pid(self, enable):
+        self._model_front_column_pid = enable
 
     def get_drive_type(self):
         return RobotDriveTypes.TRICYCLE
@@ -261,9 +265,9 @@ class TricycleRobot(IRobot):
                 self.get_max_front_wheel_angle(),
                 self.get_front_wheel_from_axis_distance(),
                 self.get_max_front_wheel_speed(),
-                self.get_front_column_model_p_gain()
+                self.get_front_column_model_p_gain(),
+                model_front_column_pid=self._model_front_column_pid
             )
-
         (self._x, self._y, self._angle), self._wheel_angle = new_poses[0], new_wheel_angles[0]
         v, w = path_velocity([(0,) + self._last_pose,
                               (dt,) + (self._x, self._y, self._angle)])
