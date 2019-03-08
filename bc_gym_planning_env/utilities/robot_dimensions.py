@@ -1,22 +1,25 @@
+""" Saved costants - dimensions of robots. """
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 
 import numpy as np
-from abc import abstractmethod, ABCMeta
 
-from bc_gym_planning_env.robot_models.robot_names import RobotDriveTypes, RobotNames
+from shining_software.env_utils.robot_models.robot_dimensions_interface import IDimensions, ITricycleDimensions, \
+    IDiffdriveDimensions
+from shining_software.env_utils.robot_models.standard_robot_names_examples import StandardRobotExamples
+from shining_software.env_utils.robot_models.robot_drive_types import RobotDriveTypes
 
 
-def get_dimensions_by_name(footprint_name):
+def get_dimensions_example(footprint_name):
     """
     Get class corresponding to footprint_name
 
     :param footprint_name: footprint name string (see below for valid inputs)
-    :return: Dimensions class associated with footprint string, if valid
+    :return IDimensions: Dimensions class associated with footprint string, if valid
     """
-    name_to_dimensions = {RobotNames.INDUSTRIAL_TRICYCLE_V1: IndustrialTricycleV1Dimensions,
-                          RobotNames.INDUSTRIAL_DIFFDRIVE_V1: IndustrialDiffdriveV1Dimensions}
+    name_to_dimensions = {StandardRobotExamples.INDUSTRIAL_TRICYCLE_V1: IndustrialTricycleV1Dimensions,
+                          StandardRobotExamples.INDUSTRIAL_DIFFDRIVE_V1: IndustrialDiffdriveV1Dimensions}
 
     valid_footprint_types = list(name_to_dimensions.keys())
 
@@ -26,48 +29,26 @@ def get_dimensions_by_name(footprint_name):
     return name_to_dimensions[footprint_name]
 
 
-def get_drive_type_by_name(platform_name):
-    return {RobotNames.INDUSTRIAL_TRICYCLE_V1: RobotDriveTypes.TRICYCLE,
-            RobotNames.INDUSTRIAL_DIFFDRIVE_V1: RobotDriveTypes.DIFF
-            }[platform_name]
-
-
-class IDimensions(object):
-    """
-    Dimensions interface with common abstract static methods to all dimensions classes.
-    """
-
-    __metaclass__ = ABCMeta
-
-    @staticmethod
-    @abstractmethod
-    def footprint():
-        """
-        :return: An array of (x,y) points representing the robot's footprint for the given footprint modifier.
-        """
-
-    @staticmethod
-    @abstractmethod
-    def footprint_corner_indices():
-        """
-        :return: An array of length 4 containing the indices of the footprint array which are the footprint's corners.
-        """
-
-
-class IndustrialDiffdriveV1Dimensions(IDimensions):
+class IndustrialDiffdriveV1Dimensions(IDimensions, IDiffdriveDimensions):
+    """ Dimensions of an industrial differential drive robot. """
     @staticmethod
     def distance_between_wheels():
         """
         returns distance between wheels in meters
+        :return: distance between wheels in meters
         """
         return 0.587  # in meters
 
     @staticmethod
     def wheel_radius():
+        """
+        Get radius of the wheel in meters.
+        :return: radius of the wheel
+        """
         return 0.1524  # meters
 
     @staticmethod
-    def footprint():
+    def footprint(dynamic_footprint_modifier=0.):
         # Note: This is NOT the real footprint, just a mock for the simulator in order to develop a strategy
         footprint = np.array([
             [644.5, 0],
@@ -104,48 +85,83 @@ class IndustrialDiffdriveV1Dimensions(IDimensions):
         return footprint
 
     @staticmethod
-    def footprint_height():
-        return 1.20
+    def drive_type():
+        """
+        Return drive type of the robot (e.g. tricycle or diffdrive)
+        :return RobotDriveTypes: String from RobotDriveTypes
+        """
+        return RobotDriveTypes.DIFF
 
     @staticmethod
-    def footprint_corner_indices():
-        corner_indices = np.array([4, 11, 17, 24])
-        return corner_indices
+    def get_name():
+        return StandardRobotExamples.INDUSTRIAL_DIFFDRIVE_V1
 
 
-class IndustrialTricycleV1Dimensions(IDimensions):
+class IndustrialTricycleV1Dimensions(IDimensions, ITricycleDimensions):
+    """ Dimensions of industrial tricycle """
     @staticmethod
     def front_wheel_from_axis():
-        # Front wheel is 964mm in front of the origin (center of rear-axle)
+        """
+        Front wheel is 964mm in front of the origin (center of rear-axle)
+        :return float: front wheel to axis distance
+        """
         return 0.964
 
     @staticmethod
     def side_wheel_from_axis():
-        # Side-wheel touching the ground from the origin (without wheel-cap)
+        """
+        Side-wheel touching the ground from the origin (without wheel-cap)
+        :return float: Side-wheel touching the ground from the origin (without wheel-cap)
+        """
         return 0.3673
 
     @staticmethod
     def max_front_wheel_angle():
+        """
+        Maximum front wheel angle
+        :return float: Maximum front wheel angle
+        """
         return 0.5*170*np.pi/180.
 
     @staticmethod
     def max_front_wheel_speed():
-        return 60.*np.pi/180.  # deg per second to radians
+        """
+        deg per second to radians
+        :return float: Maximum front wheel speed
+        """
+        return 60.*np.pi/180.
 
     @staticmethod
     def max_linear_acceleration():
-        return 1./2.5  # m/s per second. It needs few seconds to achieve 1 m/s speed
+        """
+         Maximum linear acceleration in m/s per second. It needs few seconds to achieve 1 m/s speed
+        :return: Maximum linear acceleration
+        """
+        return 1./2.5
 
     @staticmethod
     def max_angular_acceleration():
-        return 1./2.  # rad/s per second. It needs 2 seconds to achieve 1 rad/s rotation speed
+        """
+        rad/s per second. It needs 2 seconds to achieve 1 rad/s rotation speed
+        :return float: Maximum angular acceleration
+        """
+        return 1./2.
 
     @staticmethod
     def front_column_model_p_gain():
-        return 0.16  # P-gain value based on the fitting the RW data to this model
+        """ P-gain value based on the fitting the RW data to this model.
+         :return float: P-gain value based on the fitting the RW data to this model.
+         """
+        return 0.16
 
     @staticmethod
-    def footprint():
+    def footprint(dynamic_footprint_modifier=0.):
+        """ Get footprint of this robot.
+        returns an array of (x,y) points representing the robot's footprint for the given footprint modifier.
+        :param dynamic_footprint_modifier: Modifies the footprint in order to obtain a dynamic footprint.
+            When the robot doesn't have a dynamic footprint, this can be simply skipped to use a static footprint.
+        :return np.ndarray(N, 2): footprint in our internal representation
+        """
         footprint = np.array([
             [1348.35, 0.],
             [1338.56, 139.75],
@@ -168,6 +184,9 @@ class IndustrialTricycleV1Dimensions(IDimensions):
         return footprint
 
     @staticmethod
-    def footprint_corner_indices():
-        corner_indices = np.array([2, 5, 10, 14])
-        return corner_indices
+    def drive_type():
+        return RobotDriveTypes.TRICYCLE
+
+    @staticmethod
+    def get_name():
+        return StandardRobotExamples.INDUSTRIAL_TRICYCLE_V1
