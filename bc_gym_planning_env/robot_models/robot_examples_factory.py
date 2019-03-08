@@ -12,7 +12,7 @@ from bc_gym_planning_env.robot_models.differential_drive import DiffDriveRobot
 from bc_gym_planning_env.robot_models.tricycle_model import TricycleRobot
 
 
-def create_robot(robot_name, footprint_scale=1., **kwargs):
+def create_standard_robot(robot_name, footprint_scale=1., **kwargs):
     """
     Given a robot name (along with construction parameters common to all robots), create a new robot.
 
