@@ -6,7 +6,7 @@ from __future__ import absolute_import
 # your use of the software is governed by the terms of that Beta License
 # Agreement, found at http://www.braincorporation.com/betalicense.
 # ============================================================================
-from bc_gym_planning_env.robot_models.robot_names import RobotNames
+from bc_gym_planning_env.robot_models.standard_robot_names_examples import RobotNames
 
 from bc_gym_planning_env.robot_models.differential_drive import DiffDriveRobot
 from bc_gym_planning_env.robot_models.tricycle_model import TricycleRobot

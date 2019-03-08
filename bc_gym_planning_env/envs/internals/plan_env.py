@@ -12,7 +12,7 @@ from bc_gym_planning_env.envs.internals.obs import Observation
 from bc_gym_planning_env.utilities.gui import OpenCVGui
 from bc_gym_planning_env.utilities.path_tools import limit_path_index, find_last_reached, pose_distances
 from bc_gym_planning_env.utilities.planning_environment import PlanningEnvironment
-from bc_gym_planning_env.robot_models.robot_names import RobotNames
+from bc_gym_planning_env.robot_models.standard_robot_names_examples import RobotNames
 from bc_gym_planning_env.robot_models.tricycle_model import TricycleRobot
 
 

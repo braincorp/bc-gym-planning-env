@@ -6,12 +6,12 @@ import numpy as np
 
 from bc_gym_planning_env.utilities.map_drawing_utils import get_pixel_footprint_for_drawing, get_physical_angle_from_drawing, \
     puttext_centered
-from bc_gym_planning_env.robot_models.robot_names import RobotNames
+from bc_gym_planning_env.robot_models.standard_robot_names_examples import RobotNames
 from bc_gym_planning_env.utilities.path_tools import blit, draw_arrow, path_velocity
 from bc_gym_planning_env.robot_models.differential_drive import kinematic_body_pose_motion_step, \
     kinematic_body_pose_motion_step_with_noise
 from bc_gym_planning_env.robot_models.interface import IRobot
-from bc_gym_planning_env.robot_models.robot_names import RobotDriveTypes
+from bc_gym_planning_env.robot_models.standard_robot_names_examples import RobotDriveTypes
 from bc_gym_planning_env.utilities.robot_dimensions import get_dimensions_by_name
 
 
