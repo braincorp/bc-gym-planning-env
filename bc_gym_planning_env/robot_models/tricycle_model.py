@@ -6,7 +6,7 @@ import numpy as np
 
 from bc_gym_planning_env.utilities.map_drawing_utils import get_pixel_footprint_for_drawing, get_physical_angle_from_drawing, \
     puttext_centered
-from bc_gym_planning_env.robot_models.standard_robot_names_examples import RobotNames
+from bc_gym_planning_env.robot_models.standard_robot_names_examples import StandardRobotExamples
 from bc_gym_planning_env.utilities.path_tools import blit, draw_arrow, path_velocity
 from bc_gym_planning_env.robot_models.differential_drive import kinematic_body_pose_motion_step, \
     kinematic_body_pose_motion_step_with_noise
@@ -148,7 +148,7 @@ def tricycle_velocity_dynamic_model_step(
 
 class TricycleRobot(IRobot):
 
-    def __init__(self, center_shift=0., footprint_scale=1.0, robots_type_name=RobotNames.INDUSTRIAL_TRICYCLE_V1,
+    def __init__(self, center_shift=0., footprint_scale=1.0, robots_type_name=StandardRobotExamples.INDUSTRIAL_TRICYCLE_V1,
                  wheel_angle=0.,
                  model_front_column_pid=True,
                  dynamic_model=True

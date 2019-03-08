@@ -12,7 +12,7 @@ from bc_gym_planning_env.envs.internals.obs import Observation
 from bc_gym_planning_env.utilities.gui import OpenCVGui
 from bc_gym_planning_env.utilities.path_tools import limit_path_index, find_last_reached, pose_distances
 from bc_gym_planning_env.utilities.planning_environment import PlanningEnvironment
-from bc_gym_planning_env.robot_models.standard_robot_names_examples import RobotNames
+from bc_gym_planning_env.robot_models.standard_robot_names_examples import StandardRobotExamples
 from bc_gym_planning_env.robot_models.tricycle_model import TricycleRobot
 
 
@@ -54,7 +54,7 @@ class EnvParams(object):
                                              default=1.0)
     pose_delay = attr.ib(default=0, type=int)                  # we perceive poses with how much delay
     robot_name = attr.ib(
-        default=RobotNames.INDUSTRIAL_TRICYCLE_V1)             # name of the robot, e.g. determines footprint
+        default=StandardRobotExamples.INDUSTRIAL_TRICYCLE_V1)             # name of the robot, e.g. determines footprint
     state_delay = attr.ib(default=0, type=int)                 # state perception delay
                                                                # real world delay is about 0.11s (2 steps)
 

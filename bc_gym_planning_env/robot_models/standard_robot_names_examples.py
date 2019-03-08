@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 
-class RobotNames:
+class StandardRobotExamples:
     INDUSTRIAL_TRICYCLE_V1 = 'industrial_tricycle_v1'
     INDUSTRIAL_DIFFDRIVE_V1 = 'industrial_diffdrive_v1'
 
