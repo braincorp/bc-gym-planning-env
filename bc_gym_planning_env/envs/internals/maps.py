@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 
 
-from bc_gym_planning_env.utilities.costmap_2d_python import CostMap2D
+from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
 from bc_gym_planning_env.utilities.map_drawing_utils import add_wall_to_static_map
 from bc_gym_planning_env.utilities.path_tools import refine_path, orient_path
 

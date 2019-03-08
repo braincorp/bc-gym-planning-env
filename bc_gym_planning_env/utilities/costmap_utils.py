@@ -4,7 +4,7 @@ from __future__ import division
 import numpy as np
 import cv2
 
-from bc_gym_planning_env.utilities.costmap_2d_python import CostMap2D
+from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
 from bc_gym_planning_env.utilities.opencv_utils import single_threaded_opencv
 from bc_gym_planning_env.utilities.path_tools import world_to_pixel, get_pixel_footprint, get_blit_values
 

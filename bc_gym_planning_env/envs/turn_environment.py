@@ -12,7 +12,7 @@ import gym.spaces as spaces
 from gym import Env
 
 from bc_gym_planning_env.utilities.coordinate_transformations import from_global_to_egocentric
-from bc_gym_planning_env.utilities.costmap_2d_python import CostMap2D
+from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
 from bc_gym_planning_env.envs.internals.plan_env import EnvParams, PlanEnv
 from bc_gym_planning_env.envs.internals.maps import Wall
 from bc_gym_planning_env.utilities.costmap_utils import extract_egocentric_costmap

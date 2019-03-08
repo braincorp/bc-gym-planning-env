@@ -4,7 +4,7 @@ from __future__ import division
 
 import numpy as np
 
-from bc_gym_planning_env.utilities.costmap_2d_python import CostMap2D
+from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
 from bc_gym_planning_env.utilities.map_drawing_utils import get_drawing_coordinates_from_physical, \
     get_drawing_angle_from_physical, draw_world_map, draw_wide_path, prepare_canvas
 from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint, world_to_pixel, inscribed_radius

@@ -8,7 +8,7 @@ from builtins import zip
 import numpy as np
 
 try:
-    from shining_software.env_utils.utilities.numpy_utils import fast_hstack
+    from bc_gym_planning_env.utilities.numpy_utils import fast_hstack
 except ImportError:
     fast_hstack = np.hstack
 

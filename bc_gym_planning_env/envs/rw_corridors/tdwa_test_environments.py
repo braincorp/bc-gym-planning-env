@@ -8,7 +8,7 @@ import requests
 import shutil
 import pickle
 
-from bc_gym_planning_env.utilities.costmap_2d_python import CostMap2D
+from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
 from bc_gym_planning_env.utilities.artifacts_utils import decompress_tar_archive, get_cache_key_path
 
 

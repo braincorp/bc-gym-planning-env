@@ -5,10 +5,10 @@ from __future__ import division
 
 import numpy as np
 
-from shining_software.env_utils.robot_models.robot_dimensions_interface import IDimensions, ITricycleDimensions, \
+from bc_gym_planning_env.robot_models.robot_dimensions_interface import IDimensions, ITricycleDimensions, \
     IDiffdriveDimensions
-from shining_software.env_utils.robot_models.standard_robot_names_examples import StandardRobotExamples
-from shining_software.env_utils.robot_models.robot_drive_types import RobotDriveTypes
+from bc_gym_planning_env.robot_models.standard_robot_names_examples import StandardRobotExamples
+from bc_gym_planning_env.robot_models.robot_drive_types import RobotDriveTypes
 
 
 def get_dimensions_example(footprint_name):
