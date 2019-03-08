@@ -186,9 +186,6 @@ class TricycleRobot(IRobot):
 
         self._dimensions = get_dimensions_example(robots_type_name)
 
-    def enable_model_front_column_pid(self, enable):
-        self._model_front_column_pid = enable
-
     def get_drive_type(self):
         return RobotDriveTypes.TRICYCLE
 
