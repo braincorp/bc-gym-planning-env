@@ -22,7 +22,8 @@ def create_robot(robot_name, footprint_scale=1., front_wheel_angle=0.0):
     :return: An IRobot object
     """
     if robot_name in (RobotNames.INDUSTRIAL_TRICYCLE_V1):
-        robot = TricycleRobot(robots_type_name=robot_name, footprint_scale=footprint_scale, wheel_angle=front_wheel_angle)
+        robot = TricycleRobot(robots_type_name=robot_name, footprint_scale=footprint_scale, wheel_angle=front_wheel_angle,
+                              dynamic_model=False)
         return robot
     elif robot_name == RobotNames.INDUSTRIAL_DIFFDRIVE_V1:
         return DiffDriveRobot(robots_type_name=robot_name, footprint_scale=footprint_scale)

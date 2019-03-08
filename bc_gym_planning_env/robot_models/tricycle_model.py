@@ -56,7 +56,7 @@ def tricycle_dynamic_step(
         pose, current_wheel_angle, current_v, current_w, dt, control_signals,
         max_front_wheel_angle, front_wheel_from_axis, max_front_wheel_speed,
         max_linear_acceleration, max_angular_acceleration, front_column_p_gain,
-        noise_parameters=None):
+        noise_parameters=None, model_front_column_pid=True):
     '''
     Extension of tricycle_kinematic_step that takes into account inertia and pid on the front wheel column.
     Since it takes measurement v, w of the body of the robot that might not take into account non-holonomic constraints
@@ -76,13 +76,18 @@ def tricycle_dynamic_step(
         max_linear_acceleration, max_angular_acceleration - parameters of the model
     :param noise_parameters: None or dictionary of 6 alpha parameters of diff drive noise
         (implements the odometry motion model as described in Thrun et al (sec. 5.4))
+    :param model_front_column_pid bool: whether to model PID
     :return: ... x 3 pose (x, y, angle), ... x 1 current_v, ... x 1 current_w, , ... x 1 new_wheel_angle) after one timestep
     '''
-
-    new_wheel_angle = tricycle_front_wheel_column_step(
-        current_wheel_angle, control_signals[:, 1],
-        max_front_wheel_angle, max_front_wheel_speed, front_column_p_gain, dt
-    )
+    # rotate the front wheel first
+    if model_front_column_pid:
+        new_wheel_angle = tricycle_front_wheel_column_step(
+            current_wheel_angle, control_signals[:, 1],
+            max_front_wheel_angle, max_front_wheel_speed, front_column_p_gain,
+            dt
+        )
+    else:
+        new_wheel_angle = np.clip(control_signals[:, 1], -max_front_wheel_angle, max_front_wheel_angle)
 
     new_linear_velocity, new_angular_velocity = tricycle_velocity_dynamic_model_step(
         current_v, current_w, new_wheel_angle, control_signals[:, 0],
@@ -143,20 +148,27 @@ def tricycle_velocity_dynamic_model_step(
 
 class TricycleRobot(IRobot):
 
-    def __init__(self, center_shift=0., footprint_scale=1.0, robots_type_name=RobotNames.INDUSTRIAL_TRICYCLE_V1, wheel_angle=0.):
+    def __init__(self, center_shift=0., footprint_scale=1.0, robots_type_name=RobotNames.INDUSTRIAL_TRICYCLE_V1,
+                 wheel_angle=0.,
+                 model_front_column_pid=True,
+                 dynamic_model=True
+                 ):
         '''
         center_shift: how much the center of the robot is displaced from the back axis.
             Helpful, for example, if we want to follow a path defined by the center of
             the robot and not the point between the wheels (for this, set it to 0.45)
         footprint_scale: a factor to make the footprint smaller or bigger than the actual
         robots_type_name: A string with the robot's type name, which should be the RobotNames enum
+        :param model_front_column_pid bool: turn on PID modeling or assume immediate steering wheel rotation
+        :param dynamic_model bool: use dynamic model with mass or a kinematic one
         '''
         self._x = 0.
         self._y = 0.
         self._measured_v = 0.
         self._measured_w = 0.
         self._steering_motor_command = 0.
-        self._model_front_column_pid = True
+        self._model_front_column_pid = model_front_column_pid
+        self._dynamic_model = dynamic_model
 
         self._angle = 0.
         self._last_pose = (self._x, self._y, self._angle)
@@ -240,34 +252,34 @@ class TricycleRobot(IRobot):
         '''
         step when control signals are wheel linear speed and wheel angle
         '''
-        # new_poses, new_wheel_angles, new_robot_vs, new_robot_ws =\
-        #     tricycle_dynamic_step(
-        #         np.array([[self._x, self._y, self._angle]]),
-        #         [self._wheel_angle], [self._measured_v], [self._measured_w],
-        #         dt, np.array([control_signals]),
-        #         self.get_max_front_wheel_angle(),
-        #         self.get_front_wheel_from_axis_distance(),
-        #         self.get_max_front_wheel_speed(),
-        #         self.get_max_linear_acceleration(),
-        #         self.get_max_angular_acceleration(),
-        #         self.get_front_column_model_p_gain(),
-        #         self._noise_parameters
-        #     )
+        if self._dynamic_model:
+            new_poses, new_wheel_angles, _, _ =\
+                tricycle_dynamic_step(
+                    np.array([[self._x, self._y, self._angle]]),
+                    [self._wheel_angle], [self._measured_v], [self._measured_w],
+                    dt, np.array([control_signals]),
+                    self.get_max_front_wheel_angle(),
+                    self.get_front_wheel_from_axis_distance(),
+                    self.get_max_front_wheel_speed(),
+                    self.get_max_linear_acceleration(),
+                    self.get_max_angular_acceleration(),
+                    self.get_front_column_model_p_gain(),
+                    self._noise_parameters,
+                    model_front_column_pid=self._model_front_column_pid
+                )
+        else:
+            new_poses, new_wheel_angles =\
+                tricycle_kinematic_step(
+                    np.array([[self._x, self._y, self._angle]]),
+                    [self._wheel_angle],
+                    dt, np.array([control_signals]),
+                    self.get_max_front_wheel_angle(),
+                    self.get_front_wheel_from_axis_distance(),
+                    self.get_max_front_wheel_speed(),
+                    self.get_front_column_model_p_gain(),
+                    model_front_column_pid=self._model_front_column_pid
+                )
 
-        # pose, current_wheel_angle, dt, control_signals, max_front_wheel_angle, front_wheel_from_axis,
-        # max_front_wheel_speed, front_column_p_gain
-
-        new_poses, new_wheel_angles =\
-            tricycle_kinematic_step(
-                np.array([[self._x, self._y, self._angle]]),
-                [self._wheel_angle],
-                dt, np.array([control_signals]),
-                self.get_max_front_wheel_angle(),
-                self.get_front_wheel_from_axis_distance(),
-                self.get_max_front_wheel_speed(),
-                self.get_front_column_model_p_gain(),
-                model_front_column_pid=self._model_front_column_pid
-            )
         (self._x, self._y, self._angle), self._wheel_angle = new_poses[0], new_wheel_angles[0]
         v, w = path_velocity([(0,) + self._last_pose,
                               (dt,) + (self._x, self._y, self._angle)])
