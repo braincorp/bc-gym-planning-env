@@ -39,9 +39,9 @@ class IDimensions(object):
         """
 
 
-class IFootprintExtraAttributes(object):
+class IFootprintCornerIndices(object):
     """
-    Extra characteristics of the robot needed for some planners or perception algorithms
+    Extra characteristics of the footprint robot needed for some planners (e.g. TDWA recovery).
     """
 
     __metaclass__ = ABCMeta
@@ -59,6 +59,12 @@ class IFootprintExtraAttributes(object):
         :return: An array of length 4 containing the indices of the footprint array which are the footprint's corners.
         """
 
+
+class IFootprintHeight(object):
+    """
+    Extra characteristics of the robot height for perception algorithms
+    """
+    __metaclass__ = ABCMeta
     @staticmethod
     @abstractmethod
     def footprint_height():
@@ -145,3 +151,10 @@ class ITricycleDimensions(object):
         P-gain of front wheel P-controller model (e.g. based on the fitting the RW data to simple P model)
         :return float: P-gain of front wheel P-controller model
         """
+
+
+def assert_footprint_corner_indices_length(corner_indices_array):
+    """Common assert for footprint corner indices (there supposed to be 4 corners)
+    :param corner_indices_array array(4)[int]: array of indices of corners
+    """
+    assert len(corner_indices_array) == 4, "You must specify 4 corner indices on the robot's dimensions object."

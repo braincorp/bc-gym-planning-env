@@ -6,7 +6,7 @@ from __future__ import division
 import numpy as np
 
 from bc_gym_planning_env.robot_models.robot_dimensions_interface import IDimensions, ITricycleDimensions, \
-    IDiffdriveDimensions
+    IDiffdriveDimensions, IFootprintCornerIndices, assert_footprint_corner_indices_length
 from bc_gym_planning_env.robot_models.standard_robot_names_examples import StandardRobotExamples
 from bc_gym_planning_env.robot_models.robot_drive_types import RobotDriveTypes
 
@@ -29,7 +29,7 @@ def get_dimensions_example(footprint_name):
     return name_to_dimensions[footprint_name]
 
 
-class IndustrialDiffdriveV1Dimensions(IDimensions, IDiffdriveDimensions):
+class IndustrialDiffdriveV1Dimensions(IDimensions, IDiffdriveDimensions, IFootprintCornerIndices):
     """ Dimensions of an industrial differential drive robot. """
     @staticmethod
     def distance_between_wheels():
@@ -96,8 +96,14 @@ class IndustrialDiffdriveV1Dimensions(IDimensions, IDiffdriveDimensions):
     def get_name():
         return StandardRobotExamples.INDUSTRIAL_DIFFDRIVE_V1
 
+    @staticmethod
+    def footprint_corner_indices():
+        corner_indices = np.array([4, 11, 17, 24])
+        assert_footprint_corner_indices_length(corner_indices)
+        return corner_indices
 
-class IndustrialTricycleV1Dimensions(IDimensions, ITricycleDimensions):
+
+class IndustrialTricycleV1Dimensions(IDimensions, ITricycleDimensions, IFootprintCornerIndices):
     """ Dimensions of industrial tricycle """
     @staticmethod
     def front_wheel_from_axis():
@@ -190,3 +196,9 @@ class IndustrialTricycleV1Dimensions(IDimensions, ITricycleDimensions):
     @staticmethod
     def get_name():
         return StandardRobotExamples.INDUSTRIAL_TRICYCLE_V1
+
+    @staticmethod
+    def footprint_corner_indices():
+        corner_indices = np.array([2, 5, 10, 14])
+        assert_footprint_corner_indices_length(corner_indices)
+        return corner_indices
