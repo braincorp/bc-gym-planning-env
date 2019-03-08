@@ -4,9 +4,10 @@ from __future__ import division
 import numpy as np
 import cv2
 
+from bc_gym_planning_env.utilities.coordinate_transformations import world_to_pixel
 from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
 from bc_gym_planning_env.utilities.opencv_utils import single_threaded_opencv
-from bc_gym_planning_env.utilities.path_tools import world_to_pixel, get_pixel_footprint, get_blit_values
+from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint, get_blit_values
 
 
 def extract_egocentric_costmap(costmap_2d, ego_position_in_world,
