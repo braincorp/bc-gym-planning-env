@@ -22,7 +22,7 @@ from bc_gym_planning_env.utilities.costmap_utils import extract_egocentric_costm
 class TurnParams(object):
     main_corridor_length = attr.ib(default=8, type=float)
     turn_corridor_length = attr.ib(default=5, type=float)
-    turn_corridor_angle = attr.ib(default= 2 * np.pi / 8, type=float)   # angle of the turn
+    turn_corridor_angle = attr.ib(default=2 * np.pi / 8, type=float)   # angle of the turn
     main_corridor_width = attr.ib(default=1.0, type=float)                  # width of the main corridor
     turn_corridor_width = attr.ib(default=1.0, type=float)                  # width of the turn corridor
     margin = attr.ib(default=1.0, type=float)             # how much wider should we make the world?
