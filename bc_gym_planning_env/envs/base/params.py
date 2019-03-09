@@ -5,8 +5,8 @@ from __future__ import division
 import attr
 import numpy as np
 
-from shining_software.env_utils.robot_models.standard_robot_names_examples import StandardRobotExamples
-from shining_software.env_utils.envs.base.reward import RewardParams
+from bc_gym_planning_env.robot_models.standard_robot_names_examples import StandardRobotExamples
+from bc_gym_planning_env.envs.base.reward import RewardParams
 
 
 @attr.s(frozen=True)
