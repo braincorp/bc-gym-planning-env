@@ -6,13 +6,13 @@ from __future__ import division
 import attr
 import numpy as np
 
-from shining_software.env_utils.robot_models.differential_drive import \
+from bc_gym_planning_env.robot_models.differential_drive import \
     kinematic_body_pose_motion_step, kinematic_body_pose_motion_step_with_noise
-from shining_software.env_utils.robot_models.robot_interface import IRobot
-from shining_software.env_utils.robot_models.robot_drive_types import RobotDriveTypes
-from shining_software.env_utils.utilities.map_drawing_utils import \
+from bc_gym_planning_env.robot_models.robot_interface import IRobot
+from bc_gym_planning_env.robot_models.robot_drive_types import RobotDriveTypes
+from bc_gym_planning_env.utilities.map_drawing_utils import \
     get_pixel_footprint_for_drawing, get_physical_angle_from_drawing, puttext_centered
-from shining_software.env_utils.utilities.path_tools import blit, draw_arrow, path_velocity
+from bc_gym_planning_env.utilities.path_tools import blit, draw_arrow, path_velocity
 
 
 def vw_from_front_wheel_velocity(front_wheel_velocity, front_wheel_angle, front_wheel_from_axis):
