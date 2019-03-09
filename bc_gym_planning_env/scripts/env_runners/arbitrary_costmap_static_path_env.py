@@ -7,9 +7,9 @@ from __future__ import division
 import numpy as np
 import time
 
-from shining_software.env_utils.envs.base.env import PlanEnv
-from shining_software.env_utils.envs.base.params import EnvParams
-from shining_software.env_utils.envs.base.maps import example_config, generate_trajectory_and_map_from_config
+from bc_gym_planning_env.envs.base.env import PlanEnv
+from bc_gym_planning_env.envs.base.params import EnvParams
+from bc_gym_planning_env.envs.base.maps import example_config, generate_trajectory_and_map_from_config
 
 
 if __name__ == '__main__':

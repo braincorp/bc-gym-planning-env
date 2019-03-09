@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from collections import OrderedDict
 import numpy as np
 
-from shining_software.env_utils.envs.base.action import Action
+from bc_gym_planning_env.envs.base.action import Action
 
 SPACE_LOCAL_RANDOM_STATE = np.random.RandomState()
 SPACE_LOCAL_RANDOM_STATE.seed(0)

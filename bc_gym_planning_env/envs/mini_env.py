@@ -7,16 +7,16 @@ from __future__ import absolute_import
 
 import attr
 import numpy as np
-from shining_software.env_utils.robot_models.tricycle_model import TricycleRobot
+from bc_gym_planning_env.robot_models.tricycle_model import TricycleRobot
 
-from shining_software.env_utils.robot_models.robot_dimensions_examples import get_dimensions_example
-from shining_software.env_utils.utilities.costmap_2d import CostMap2D
-from shining_software.env_utils.envs.base.maps import Wall
-from shining_software.env_utils.envs.base.env import PlanEnv, _pose_collides
-from shining_software.env_utils.envs.base.params import EnvParams
-from shining_software.env_utils.utilities.coordinate_transformations import angle_diff, cart2pol, pol2cart, \
+from bc_gym_planning_env.robot_models.robot_dimensions_examples import get_dimensions_example
+from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
+from bc_gym_planning_env.envs.base.maps import Wall
+from bc_gym_planning_env.envs.base.env import PlanEnv, _pose_collides
+from bc_gym_planning_env.envs.base.params import EnvParams
+from bc_gym_planning_env.utilities.coordinate_transformations import angle_diff, cart2pol, pol2cart, \
     normalize_angle
-from shining_software.env_utils.utilities.path_tools import pose_distances
+from bc_gym_planning_env.utilities.path_tools import pose_distances
 
 
 class SpaceSeemsEmptyError(Exception):

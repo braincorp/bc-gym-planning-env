@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import cv2
 
-from shining_software.env_utils.utilities.path_tools import blit, get_blit_values, ensure_float_numpy, orient_path, \
+from bc_gym_planning_env.utilities.path_tools import blit, get_blit_values, ensure_float_numpy, orient_path, \
     path_velocity, pose_distances, distance_to_segments, distances_to_segment, distances_to_multiple_segments, \
     inscribed_radius, circumscribed_radius, get_pixel_footprint
 

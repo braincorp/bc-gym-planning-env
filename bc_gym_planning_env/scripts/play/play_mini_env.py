@@ -4,8 +4,8 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 
-from shining_software.env_utils.envs.mini_env import RandomMiniEnv
-from shining_software.env_utils.utilities.gui import KeyCapturePlay
+from bc_gym_planning_env.envs.mini_env import RandomMiniEnv
+from bc_gym_planning_env.utilities.gui import KeyCapturePlay
 
 
 if __name__ == '__main__':

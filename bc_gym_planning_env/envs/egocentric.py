@@ -9,9 +9,9 @@ from collections import OrderedDict
 
 import numpy as np
 
-from shining_software.env_utils.envs.base import spaces
-from shining_software.env_utils.utilities.coordinate_transformations import from_global_to_egocentric, world_to_pixel
-from shining_software.env_utils.utilities.costmap_utils import extract_egocentric_costmap
+from bc_gym_planning_env.envs.base import spaces
+from bc_gym_planning_env.utilities.coordinate_transformations import from_global_to_egocentric, world_to_pixel
+from bc_gym_planning_env.utilities.costmap_utils import extract_egocentric_costmap
 
 
 class ObservationWrapper(object):

@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 
-from shining_software.env_utils.utilities.coordinate_transformations import normalize_angle, rotation_matrix, \
+from bc_gym_planning_env.utilities.coordinate_transformations import normalize_angle, rotation_matrix, \
     homogenize, de_homogenize, project_pose, from_homogeneous_matrix, \
     transform_to_homogeneous_matrix, project_points, from_rotation_matrix, add_transforms, \
     chain_transforms, add_transforms_batch, transform_pose, transforms_between_poses, transform_between_poses, \

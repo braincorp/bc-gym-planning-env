@@ -3,9 +3,9 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 import numpy as np
-from shining_software.env_utils.envs.base.action import Action
-from shining_software.env_utils.envs.mini_env import RandomMiniEnv
-from shining_software.env_utils.envs.egocentric import EgocentricCostmap
+from bc_gym_planning_env.envs.base.action import Action
+from bc_gym_planning_env.envs.mini_env import RandomMiniEnv
+from bc_gym_planning_env.envs.egocentric import EgocentricCostmap
 
 
 if __name__ == '__main__':

@@ -5,10 +5,10 @@ from __future__ import division
 
 import numpy as np
 
-from shining_software.env_utils.robot_models.robot_dimensions_interface import IDimensions, ITricycleDimensions, \
+from bc_gym_planning_env.robot_models.robot_dimensions_interface import IDimensions, ITricycleDimensions, \
     IDiffdriveDimensions, IFootprintCornerIndices, assert_footprint_corner_indices_length
-from shining_software.env_utils.robot_models.standard_robot_names_examples import StandardRobotExamples
-from shining_software.env_utils.robot_models.robot_drive_types import RobotDriveTypes
+from bc_gym_planning_env.robot_models.standard_robot_names_examples import StandardRobotExamples
+from bc_gym_planning_env.robot_models.robot_drive_types import RobotDriveTypes
 
 
 def get_dimensions_example(footprint_name):
@@ -186,6 +186,7 @@ class IndustrialTricycleV1Dimensions(IDimensions, ITricycleDimensions, IFootprin
             [1303.15, -286.54],
             [1341.34, -118.37]
         ]) / 1000.
+        footprint[:, 1] *= 0.95
         assert(footprint[0, 1] == 0)  # bumper front-center has to be the first one (just so that everything is correct)
         return footprint
 

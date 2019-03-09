@@ -6,19 +6,19 @@ from __future__ import division
 import attr
 import copy
 import numpy as np
-from shining_software.env_utils.robot_models.tricycle_model import TricycleRobot
+from bc_gym_planning_env.robot_models.tricycle_model import TricycleRobot
 
-from shining_software.env_utils.robot_models.robot_dimensions_examples import get_dimensions_example
-from shining_software.env_utils.utilities.costmap_2d import CostMap2D
-from shining_software.env_utils.utilities.costmap_utils import clone_costmap
-from shining_software.env_utils.utilities.coordinate_transformations import world_to_pixel
-from shining_software.env_utils.utilities.path_tools import get_pixel_footprint, find_last_reached
-from shining_software.env_utils.utilities.path_tools import refine_path
-from shining_software.env_utils.envs.base.draw import draw_environment
-from shining_software.env_utils.envs.base.obs import Observation
-from shining_software.env_utils.envs.base import spaces
-from shining_software.env_utils.envs.base.reward import ContinuousRewardProvider, generate_initial_state
-from shining_software.env_utils.utilities.gui import OpenCVGui
+from bc_gym_planning_env.robot_models.robot_dimensions_examples import get_dimensions_example
+from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
+from bc_gym_planning_env.utilities.costmap_utils import clone_costmap
+from bc_gym_planning_env.utilities.coordinate_transformations import world_to_pixel
+from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint, find_last_reached
+from bc_gym_planning_env.utilities.path_tools import refine_path
+from bc_gym_planning_env.envs.base.draw import draw_environment
+from bc_gym_planning_env.envs.base.obs import Observation
+from bc_gym_planning_env.envs.base import spaces
+from bc_gym_planning_env.envs.base.reward import ContinuousRewardProvider, generate_initial_state
+from bc_gym_planning_env.utilities.gui import OpenCVGui
 
 
 def _get_element_from_list_with_delay(item_list, element, delay):

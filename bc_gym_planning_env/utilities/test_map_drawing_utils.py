@@ -4,8 +4,8 @@ from __future__ import division
 
 import numpy as np
 
-from shining_software.env_utils.utilities.costmap_2d import CostMap2D
-from shining_software.env_utils.utilities.map_drawing_utils import get_drawing_coordinates_from_physical, \
+from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
+from bc_gym_planning_env.utilities.map_drawing_utils import get_drawing_coordinates_from_physical, \
     get_physical_coords_from_drawing, draw_trajectory, draw_robot, prepare_canvas
 
 

@@ -3,13 +3,13 @@ from __future__ import absolute_import
 from __future__ import division
 
 import numpy as np
-from shining_software.env_utils.utilities.coordinate_transformations import world_to_pixel
+from bc_gym_planning_env.utilities.coordinate_transformations import world_to_pixel
 
-from shining_software.env_utils.utilities.costmap_2d import CostMap2D
-from shining_software.env_utils.utilities.costmap_utils import extract_egocentric_costmap, rotate_costmap, \
+from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
+from bc_gym_planning_env.utilities.costmap_utils import extract_egocentric_costmap, rotate_costmap, \
     is_robot_colliding, in_costmap_bounds
-from shining_software.env_utils.utilities.map_drawing_utils import add_wall_to_static_map
-from shining_software.env_utils.utilities.path_tools import get_pixel_footprint, get_blit_values
+from bc_gym_planning_env.utilities.map_drawing_utils import add_wall_to_static_map
+from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint, get_blit_values
 
 
 def assert_mark_at(costmap2d, x, y, check_inflation=False, check_single=True):

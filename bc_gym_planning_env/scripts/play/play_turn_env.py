@@ -7,8 +7,8 @@ from __future__ import absolute_import
 from __future__ import division
 
 
-from shining_software.env_utils.envs.synth_turn_env import RandomAisleTurnEnv
-from shining_software.env_utils.utilities.gui import KeyCapturePlay
+from bc_gym_planning_env.envs.synth_turn_env import RandomAisleTurnEnv
+from bc_gym_planning_env.utilities.gui import KeyCapturePlay
 
 
 if __name__ == '__main__':

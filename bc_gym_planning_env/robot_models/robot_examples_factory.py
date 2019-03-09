@@ -1,11 +1,11 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-from shining_software.env_utils.robot_models.robot_dimensions_examples import get_dimensions_example
-from shining_software.env_utils.robot_models.standard_robot_names_examples import StandardRobotExamples
+from bc_gym_planning_env.robot_models.robot_dimensions_examples import get_dimensions_example
+from bc_gym_planning_env.robot_models.standard_robot_names_examples import StandardRobotExamples
 
-from shining_software.env_utils.robot_models.differential_drive import DiffDriveRobot
-from shining_software.env_utils.robot_models.tricycle_model import TricycleRobot
+from bc_gym_planning_env.robot_models.differential_drive import DiffDriveRobot
+from bc_gym_planning_env.robot_models.tricycle_model import TricycleRobot
 
 
 def create_standard_robot(robot_name, footprint_scale=1., **kwargs):

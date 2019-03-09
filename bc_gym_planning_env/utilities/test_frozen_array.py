@@ -10,7 +10,7 @@ from __future__ import absolute_import
 import numpy as np
 import pytest
 
-from shining_software.env_utils.utilities.frozenarray import freeze_array
+from bc_gym_planning_env.utilities.frozenarray import freeze_array
 
 
 def test_frozen_array():
