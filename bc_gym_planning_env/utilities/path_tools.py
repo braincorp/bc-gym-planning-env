@@ -8,8 +8,8 @@ import numpy as np
 
 import cv2
 
-from bc_gym_planning_env.utilities.coordinate_transformations import normalize_angle, diff_angles
-from bc_gym_planning_env.utilities.numpy_utils import fast_amin, fast_amax
+from shining_software.env_utils.utilities.coordinate_transformations import normalize_angle, diff_angles
+from shining_software.env_utils.utilities.numpy_utils import fast_amin, fast_amax
 
 
 def get_blit_mask(patch, im, x, y):

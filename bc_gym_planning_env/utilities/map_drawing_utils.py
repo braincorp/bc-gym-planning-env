@@ -11,9 +11,9 @@ import cv2
 import numpy as np
 
 
-from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
-from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint, blit, get_pixel_in_map_mask
-from bc_gym_planning_env.utilities.coordinate_transformations import world_to_pixel, pixel_to_world
+from shining_software.env_utils.utilities.costmap_2d import CostMap2D
+from shining_software.env_utils.utilities.path_tools import get_pixel_footprint, blit, get_pixel_in_map_mask
+from shining_software.env_utils.utilities.coordinate_transformations import world_to_pixel, pixel_to_world
 
 
 try:
@@ -42,25 +42,16 @@ def get_drawing_coordinates_from_physical(map_shape, resolution, origin, physica
     :param resolution: resolution of the map
     :param origin: origin of the map
     :param physical_coords: either (x, y)  or n x 2 array of (x, y), in physical units
-    :param enforce_bounds: Can be
+    :param enforce_bounds Bool: Can be
         False: Allow points to be outside range of costmap
         True: Raise an error if points fall out of costmap
-        'filter': Filter out points which fall out of costmap.
     :return: same in coordinates suitable for drawing (y axis is flipped)
     """
-    assert enforce_bounds in (True, False, 'filter')
-
     # flip the y because we flip image for display
     pixel_coords = world_to_pixel_drawing_impl(np.array(physical_coords), origin, resolution, map_shape[0])
-
-    if enforce_bounds:
-        if enforce_bounds == 'filter':
-            ixs = get_pixel_in_map_mask(map_shape=map_shape, pixels=pixel_coords)
-            pixel_coords = pixel_coords[ixs]
-        else:
-            if enforce_bounds and (not (pixel_coords < map_shape[1::-1]).all() or (np.amin(pixel_coords) < 0)):
-                raise IndexError("Point %s, in pixels (%s) is outside the map (shape %s)." %
-                                 (physical_coords, pixel_coords, map_shape))
+    if enforce_bounds and (not (pixel_coords < map_shape[1::-1]).all() or (np.amin(pixel_coords) < 0)):
+        raise IndexError("Point %s, in pixels (%s) is outside the map (shape %s)." %
+                         (physical_coords, pixel_coords, map_shape))
     return pixel_coords
 
 

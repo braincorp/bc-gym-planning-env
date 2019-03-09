@@ -1,8 +1,8 @@
 """ Drawing utilities """
 from __future__ import absolute_import
 
-from bc_gym_planning_env.utilities.path_tools import inscribed_radius
-from bc_gym_planning_env.utilities.map_drawing_utils import get_drawing_coordinates_from_physical, \
+from shining_software.env_utils.utilities.path_tools import inscribed_radius
+from shining_software.env_utils.utilities.map_drawing_utils import get_drawing_coordinates_from_physical, \
     get_drawing_angle_from_physical, draw_world_map, draw_wide_path, prepare_canvas
 
 

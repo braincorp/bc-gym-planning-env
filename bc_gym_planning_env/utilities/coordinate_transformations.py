@@ -7,10 +7,12 @@ from builtins import zip
 
 import numpy as np
 
+
 try:
-    from bc_gym_planning_env.utilities.numpy_utils import fast_hstack
+    from shining_software.env_utils.utilities.numpy_utils import fast_hstack
 except ImportError:
     fast_hstack = np.hstack
+
 
 try:
     # import cpp optimized implementation if possible
@@ -33,17 +35,18 @@ except ImportError:
         """
         return (np.array(z) + np.pi) % (2 * np.pi) - np.pi
 
+
 try:
     from brain.shining_utils.transform_utils import inverse_transform_2d_impl
     inverse_transform = inverse_transform_2d_impl
     """
     First unrotate, then untranslate
-
+    
     Defined s.t T + inverse_transform(T) = (0, 0, 0)
     This means that the inverse flips the operator:  inverse_transform(T_i^j) = T_j^i.
-
+    
     See the appendix (p. 328) in
-
+    
     Tardos, J. D., Neira, J., Newman, P. M., & Leonard, J. J. (2002).
     Robust Mapping and Localization in Indoor Environments Using Sonar Data.
     The International Journal of Robotics Research, 21(4), 311-330.
@@ -126,7 +129,7 @@ def cart2pol(x, y):
     :return: the point in polar coordinates
     """
     """ cartesian to polar coordinates on 2d point """
-    r = np.sqrt(x ** 2 + y ** 2)
+    r = np.sqrt(x**2 + y**2)
     phi = np.arctan2(y, x)
     phi = normalize_angle(phi)
     return r, phi
@@ -287,7 +290,6 @@ def from_homogeneous_matrix(transform_matrix):
 try:
     from shining_software.weave_utils.inline_function import inline_function
 
-
     def project_poses(transform, poses):
         """
         Transform poses using the passed transform.
@@ -315,7 +317,7 @@ try:
             double dx = transform(0);
             double dy = transform(1);
             double angle;
-
+            
             double* p_projected = &projected_poses(0, 0);
             double* p_poses = &poses(0, 0);
             double* p_poses_next = &poses(0, 1);
@@ -325,12 +327,12 @@ try:
                 ++p_projected;
                 *p_projected = (*p_poses)*s + (*p_poses_next)*c + dy;
                 ++p_projected;
-
+                
                 // add and normalize angle
                 ++p_poses_next;
                 *p_projected = remainder((*p_poses_next) + da, 2*M_PI);
                 ++p_projected;
-
+                
                 // increment pointers
                 p_poses += 3;  // go to next x coordinate
                 p_poses_next += 2; // this was already incremented for fetching angle
@@ -553,7 +555,7 @@ def transform_poses_batch(poses, transforms):
     :param transforms array(N, 3)[float64]: array of transforms
     :return array(N, 3)[float64]: transformed poses
     """
-    assert (transforms.ndim > 1 or poses.ndim > 1)
+    assert(transforms.ndim > 1 or poses.ndim > 1)
     if transforms.ndim == 1:
         transforms = np.tile(transforms, (len(poses), 1))
 
@@ -639,7 +641,6 @@ def transforms_between_pose_pairs(src_poses, dst_poses):
 try:
     from shining_software.weave_utils.inline_function import inline_function
 
-
     def compose_covariances(t_a_b, s_a_b, t_b_c, s_b_c, debug=False):
         """
         For [x, y, angle] transform t_a^b, t_b^c s.t. t_a^b + t_b^c = t_a^c
@@ -670,20 +671,20 @@ try:
             double t_a_b_theta = t_a_b_theta_py;
             double tbx = tbx_py;
             double tby = tby_py;
-
+    
             // Compute J_A, J_B
             // (See p. 1137, Appendinx B in SLAM in Large-Scale Cyclic Environments Using the ATLAS Framework, Bosse et al, 2004)
             for (int i=0; i<3; ++i) {
                 J_A(i, i) = 1;
                 J_B(i, i) = 1;
             }
-
+    
             double s = sin(t_a_b_theta);
             double c = cos(t_a_b_theta);
-
+    
             J_A(0, 2) = -s*tbx - c*tby;
             J_A(1, 2) = c*tbx - s*tby;
-
+    
             J_B(0, 0) = c;
             J_B(0, 1) = -s;
             J_B(1, 0) = s;
@@ -929,7 +930,7 @@ def from_odom_to_map(odom_poses, map_to_odom_transformation):
 def apply_3d_transform_matrix(
         transform_matrix,  # type: ndarray(4, 4)[float]
         points,  # type: ndarray(N, 3)[float]
-):  # -> type: ndarray(N, 3)[float]
+    ):  # -> type: ndarray(N, 3)[float]
     """
     Transform a set of points given a 4x4 homogeneous transform matrix.
     :param transform_matrix: A homogeneous transform matrix

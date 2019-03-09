@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import attr
 import numpy as np
 
-from bc_gym_planning_env.utilities.path_tools import pose_distances, find_last_reached
+from shining_software.env_utils.utilities.path_tools import pose_distances, find_last_reached
 
 
 @attr.s

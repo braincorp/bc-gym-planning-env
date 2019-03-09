@@ -8,9 +8,9 @@ import requests
 import shutil
 import pickle
 
-from bc_gym_planning_env.utilities.artifacts_utils import decompress_tar_archive, get_cache_key_path
+from shining_software.env_utils.utilities.artifacts_utils import decompress_tar_archive, get_cache_key_path
 
-from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
+from shining_software.env_utils.utilities.costmap_2d import CostMap2D
 
 
 def get_random_maps_squeeze_between_obstacle_in_corridor_on_path():

@@ -4,8 +4,8 @@ from __future__ import absolute_import
 from __future__ import division
 import numpy as np
 
-from bc_gym_planning_env.utilities.frozenarray import freeze_array
-from bc_gym_planning_env.utilities.coordinate_transformations import world_to_pixel, pixel_to_world
+from shining_software.env_utils.utilities.frozenarray import freeze_array
+from shining_software.env_utils.utilities.coordinate_transformations import world_to_pixel, pixel_to_world
 
 CURRENT_ENCODING_VERSION = 1
 

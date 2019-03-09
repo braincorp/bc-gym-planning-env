@@ -6,13 +6,13 @@ from __future__ import division
 import attr
 import numpy as np
 
-from bc_gym_planning_env.robot_models.differential_drive import \
+from shining_software.env_utils.robot_models.differential_drive import \
     kinematic_body_pose_motion_step, kinematic_body_pose_motion_step_with_noise
-from bc_gym_planning_env.robot_models.robot_interface import IRobot
-from bc_gym_planning_env.robot_models.robot_drive_types import RobotDriveTypes
-from bc_gym_planning_env.utilities.map_drawing_utils import \
+from shining_software.env_utils.robot_models.robot_interface import IRobot
+from shining_software.env_utils.robot_models.robot_drive_types import RobotDriveTypes
+from shining_software.env_utils.utilities.map_drawing_utils import \
     get_pixel_footprint_for_drawing, get_physical_angle_from_drawing, puttext_centered
-from bc_gym_planning_env.utilities.path_tools import blit, draw_arrow, path_velocity
+from shining_software.env_utils.utilities.path_tools import blit, draw_arrow, path_velocity
 
 
 def vw_from_front_wheel_velocity(front_wheel_velocity, front_wheel_angle, front_wheel_from_axis):
@@ -30,8 +30,7 @@ def vw_from_front_wheel_velocity(front_wheel_velocity, front_wheel_angle, front_
     return v, w
 
 
-def tricycle_kinematic_step(pose, current_wheel_angle, dt, control_signals, max_front_wheel_angle,
-                            front_wheel_from_axis,
+def tricycle_kinematic_step(pose, current_wheel_angle, dt, control_signals, max_front_wheel_angle, front_wheel_from_axis,
                             max_front_wheel_speed, front_column_p_gain, model_front_column_pid=True):
     '''
     Integrate tricycle kinematics based on control signals (tricycle kinematic forward model)
@@ -136,14 +135,14 @@ def tricycle_front_wheel_column_step(current_front_wheel_angle, desired_front_wh
     :return: new front wheel angle
     """
     # rotate the front wheel first emulating a pid controller on the front wheel with a finite rotation speed
-    max_front_wheel_delta = max_front_wheel_speed * dt
+    max_front_wheel_delta = max_front_wheel_speed*dt
     clip_first = False
     if clip_first:
         desired_wheel_delta = desired_front_wheel_angle - current_front_wheel_angle
         desired_wheel_delta = np.clip(desired_wheel_delta, -max_front_wheel_delta, max_front_wheel_delta)
-        new_front_wheel_angle = current_front_wheel_angle + front_column_p_gain * desired_wheel_delta
+        new_front_wheel_angle = current_front_wheel_angle + front_column_p_gain*desired_wheel_delta
     else:
-        desired_wheel_delta = front_column_p_gain * (desired_front_wheel_angle - current_front_wheel_angle)
+        desired_wheel_delta = front_column_p_gain*(desired_front_wheel_angle - current_front_wheel_angle)
         desired_wheel_delta = np.clip(desired_wheel_delta, -max_front_wheel_delta, max_front_wheel_delta)
         new_front_wheel_angle = current_front_wheel_angle + desired_wheel_delta
     new_front_wheel_angle = np.clip(new_front_wheel_angle, -max_front_wheel_angle, max_front_wheel_angle)
@@ -169,15 +168,15 @@ def tricycle_velocity_dynamic_model_step(
     desired_linear_velocity = desired_wheel_v * np.cos(current_wheel_angle)
     desired_angular_velocity = desired_wheel_v * np.sin(current_wheel_angle) / front_wheel_from_axis
 
-    desired_linear_acceleration = (desired_linear_velocity - current_v) / dt
-    desired_angular_acceleration = (desired_angular_velocity - current_w) / dt
+    desired_linear_acceleration = (desired_linear_velocity - current_v)/dt
+    desired_angular_acceleration = (desired_angular_velocity - current_w)/dt
 
     # we can decelerate twice as fast as accelerate
-    linear_acceleration = np.clip(desired_linear_acceleration, -2 * max_linear_acceleration, max_linear_acceleration)
+    linear_acceleration = np.clip(desired_linear_acceleration, -2*max_linear_acceleration, max_linear_acceleration)
     angular_acceleration = np.clip(desired_angular_acceleration, -max_angular_acceleration, max_angular_acceleration)
 
-    new_linear_velocity = (current_v + linear_acceleration * dt)
-    new_angular_velocity = (current_w + angular_acceleration * dt)
+    new_linear_velocity = (current_v + linear_acceleration*dt)
+    new_angular_velocity = (current_w + angular_acceleration*dt)
 
     return new_linear_velocity, new_angular_velocity
 
@@ -390,9 +389,9 @@ class TricycleRobot(IRobot):
             for tricycle command in the action is (v, desired_wheel_angle)
         """
         last_pose = self._state.get_pose()
-
+        
         if self._dynamic_model:
-            new_poses, new_wheel_angles, _, _ = \
+            new_poses, new_wheel_angles, _, _ =\
                 tricycle_dynamic_step(
                     np.array([list(last_pose)]),
                     [self._state.wheel_angle],
@@ -410,7 +409,7 @@ class TricycleRobot(IRobot):
                     model_front_column_pid=self._model_front_column_pid
                 )
         else:
-            new_poses, new_wheel_angles = \
+            new_poses, new_wheel_angles =\
                 tricycle_kinematic_step(
                     np.array([list(last_pose)]),
                     [self._state.wheel_angle],
@@ -464,17 +463,17 @@ class TricycleRobot(IRobot):
 
         arrow_length = 15
         draw_arrow(image, (px, py),
-                   (px + int(arrow_length * np.cos(angle)), py + int(arrow_length * np.sin(angle))),
+                   (px+int(arrow_length*np.cos(angle)), py+int(arrow_length*np.sin(angle))),
                    color=(0, 0, 255),
                    thickness=2)
 
-        wheel_pixel_x = int(px + np.cos(angle) * self.get_front_wheel_from_axis_distance() / map_resolution)
-        wheel_pixel_y = int(py + np.sin(angle) * self.get_front_wheel_from_axis_distance() / map_resolution)
+        wheel_pixel_x = int(px + np.cos(angle)*self.get_front_wheel_from_axis_distance()/map_resolution)
+        wheel_pixel_y = int(py + np.sin(angle)*self.get_front_wheel_from_axis_distance()/map_resolution)
 
         if draw_steering_details:
             draw_arrow(image, (wheel_pixel_x, wheel_pixel_y),
-                       (wheel_pixel_x + int(arrow_length * np.cos(angle - self._state.wheel_angle)),
-                        wheel_pixel_y + int(arrow_length * np.sin(angle - self._state.wheel_angle))),
+                       (wheel_pixel_x+int(arrow_length * np.cos(angle-self._state.wheel_angle)),
+                        wheel_pixel_y+int(arrow_length * np.sin(angle-self._state.wheel_angle))),
                        color=(0, 0, 255),
                        thickness=1)
 

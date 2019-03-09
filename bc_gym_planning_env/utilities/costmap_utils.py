@@ -5,10 +5,10 @@ from __future__ import division
 import numpy as np
 import cv2
 
-from bc_gym_planning_env.utilities.coordinate_transformations import world_to_pixel
-from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
-from bc_gym_planning_env.utilities.opencv_utils import single_threaded_opencv
-from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint, get_blit_mask, get_blit_values
+from shining_software.env_utils.utilities.coordinate_transformations import world_to_pixel
+from shining_software.env_utils.utilities.costmap_2d import CostMap2D
+from shining_software.env_utils.utilities.opencv_utils import single_threaded_opencv
+from shining_software.env_utils.utilities.path_tools import get_pixel_footprint, get_blit_mask, get_blit_values
 
 
 def clone_costmap(costmap):

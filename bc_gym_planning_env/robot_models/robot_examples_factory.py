@@ -1,11 +1,11 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-from bc_gym_planning_env.robot_models.robot_dimensions_examples import get_dimensions_example
-from bc_gym_planning_env.robot_models.standard_robot_names_examples import StandardRobotExamples
+from shining_software.env_utils.robot_models.robot_dimensions_examples import get_dimensions_example
+from shining_software.env_utils.robot_models.standard_robot_names_examples import StandardRobotExamples
 
-from bc_gym_planning_env.robot_models.differential_drive import DiffDriveRobot
-from bc_gym_planning_env.robot_models.tricycle_model import TricycleRobot
+from shining_software.env_utils.robot_models.differential_drive import DiffDriveRobot
+from shining_software.env_utils.robot_models.tricycle_model import TricycleRobot
 
 
 def create_standard_robot(robot_name, footprint_scale=1., **kwargs):
@@ -18,7 +18,7 @@ def create_standard_robot(robot_name, footprint_scale=1., **kwargs):
     :return: An IRobot object
     """
     dimensions = get_dimensions_example(robot_name)
-    if robot_name in (StandardRobotExamples.INDUSTRIAL_TRICYCLE_V1):
+    if robot_name in StandardRobotExamples.INDUSTRIAL_TRICYCLE_V1:
         robot = TricycleRobot(dimensions=dimensions, footprint_scale=footprint_scale, **kwargs)
         return robot
     elif robot_name == StandardRobotExamples.INDUSTRIAL_DIFFDRIVE_V1:
