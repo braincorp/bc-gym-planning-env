@@ -6,7 +6,7 @@ from __future__ import division
 import attr
 import numpy as np
 
-from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
+from shining_software.env_utils.utilities.costmap_2d import CostMap2D
 
 
 @attr.s(frozen=True)
