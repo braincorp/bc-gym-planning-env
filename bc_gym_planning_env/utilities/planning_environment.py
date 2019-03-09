@@ -2,14 +2,13 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 
-import numpy as np
 
 from bc_gym_planning_env.envs.base.action import Action
-from bc_gym_planning_env.utilities.coordinate_transformations import world_to_pixel
+from bc_gym_planning_env.envs.base.draw import draw_robot
+from bc_gym_planning_env.envs.base.env import _pose_collides
 from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
-from bc_gym_planning_env.utilities.map_drawing_utils import get_drawing_coordinates_from_physical, \
-    get_drawing_angle_from_physical, draw_world_map, draw_wide_path, prepare_canvas
-from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint, inscribed_radius
+from bc_gym_planning_env.utilities.map_drawing_utils import draw_world_map, draw_wide_path, prepare_canvas
+from bc_gym_planning_env.utilities.path_tools import inscribed_radius
 
 
 class PlanningEnvironment(object):
@@ -37,14 +36,6 @@ class PlanningEnvironment(object):
         self._new_robot_goal = None
         self._on_collision_callback = on_collision_callback
 
-    def draw_robot(self, image, x, y, angle, color, costmap):
-        px, py = get_drawing_coordinates_from_physical(costmap.get_data().shape,
-                                                       costmap.get_resolution(),
-                                                       costmap.get_origin(),
-                                                       (x, y))
-        pangle = get_drawing_angle_from_physical(angle)
-        self._robot.draw(image, px, py, pangle, color, self._costmap.get_resolution())
-
     def step(self, dt, control_signals, check_collisions=True):
         if self._new_robot_position:
             try:
@@ -56,7 +47,7 @@ class PlanningEnvironment(object):
         self._robot.step(dt, Action(command=control_signals))
         new_position = self._robot.get_pose()
         if check_collisions:
-            collides = self._pose_collides(*new_position)
+            collides = _pose_collides(new_position[0], new_position[1], new_position[2], self._robot, self._costmap)
             if collides:
                 self._on_collision_callback(new_position)
                 self._robot.set_pose(*old_position)
@@ -86,35 +77,12 @@ class PlanningEnvironment(object):
         draw_world_map(img, self._costmap.get_data())
 
         x, y, angle = self._robot.get_pose()
-        self.draw_robot(img, x, y, angle, color=(0, 100, 0), costmap=self._costmap)
+        draw_robot(self._robot, img, x, y, angle, color=(0, 100, 0), costmap=self._costmap)
         return img
-
-    def _pose_collides(self, x, y, angle):
-        '''
-        Check if robot footprint at x, y (world coordinates) and
-            oriented as yaw collides with lethal obstacles.
-        '''
-        kernel_image = get_pixel_footprint(angle,
-                                           self._robot.get_footprint() * self._robot_footprint_scaling,
-                                           self._costmap.get_resolution())
-        # Get the coordinates of where the footprint is inside the kernel_image (on pixel coordinates)
-        kernel = np.where(kernel_image)
-        # Move footprint to (x,y), all in pixel coordinates
-        x, y = world_to_pixel(np.array([x, y]), self._costmap.get_origin(), self._costmap.get_resolution())
-        collisions = y + kernel[0] - kernel_image.shape[0] // 2, x + kernel[1] - kernel_image.shape[1] // 2
-        raw_map = self._costmap.get_data()
-        # Check if the footprint pixel coordinates are valid, this is, if they are not negative and are inside the map
-        good = np.logical_and(np.logical_and(collisions[0] >= 0, collisions[0] < raw_map.shape[0]),
-                              np.logical_and(collisions[1] >= 0, collisions[1] < raw_map.shape[1]))
-
-        # Just from the footprint coordinates that are good, check if they collide
-        # with obstacles inside the map
-        return bool(np.any(raw_map[collisions[0][good],
-                                   collisions[1][good]] == CostMap2D.LETHAL_OBSTACLE))
 
     def set_robot_pose(self, x, y, angle, check=True):
         if check:
-            if self._pose_collides(x, y, angle):
+            if _pose_collides(x, y, angle, self._robot, self._costmap):
                 raise ValueError("This pose collides with obstacles")
         self._robot.set_pose(x, y, angle)
 
