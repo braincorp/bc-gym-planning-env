@@ -9,7 +9,7 @@ import attr
 from bc_gym_planning_env.robot_models.robot_drive_types import RobotDriveTypes
 from bc_gym_planning_env.utilities.map_drawing_utils import get_pixel_footprint_for_drawing, get_physical_angle_from_drawing
 from bc_gym_planning_env.utilities.path_tools import draw_arrow, blit, normalize_angle, path_velocity
-from bc_gym_planning_env.robot_models.interface import IRobot
+from bc_gym_planning_env.robot_models.robot_interface import IRobot
 
 
 def kinematic_body_pose_motion_step(pose, linear_velocity, angular_velocity, dt):

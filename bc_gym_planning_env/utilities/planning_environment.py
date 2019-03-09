@@ -4,6 +4,7 @@ from __future__ import division
 
 import numpy as np
 
+from bc_gym_planning_env.envs.base.action import Action
 from bc_gym_planning_env.utilities.coordinate_transformations import world_to_pixel
 from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
 from bc_gym_planning_env.utilities.map_drawing_utils import get_drawing_coordinates_from_physical, \
@@ -52,7 +53,7 @@ class PlanningEnvironment(object):
                 pass
             self._new_robot_position = None
         old_position = self._robot.get_pose()
-        self._robot.step(dt, control_signals)
+        self._robot.step(dt, Action(command=control_signals))
         new_position = self._robot.get_pose()
         if check_collisions:
             collides = self._pose_collides(*new_position)
