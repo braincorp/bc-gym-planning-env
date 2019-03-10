@@ -2,7 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as f:
     long_description = f.read()
@@ -19,7 +19,7 @@ setup(
     license='Braincorp',
     install_requires=['numpy>=1.13.3',
                       'gym',
-                      'attrs==19.1.0',
+                      'attrs>=19.1.0',
                       'opencv-python'],
     package_data={'': ['input']},
     include_package_data=True,
