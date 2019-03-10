@@ -2,6 +2,6 @@ language: python
 
 script:
      # install the package and test
-     - pip install -e [tests].
+     - pip install -e .[tests]
      - py.test --pep8 -m pep8 -n0
      - py.test -n0
