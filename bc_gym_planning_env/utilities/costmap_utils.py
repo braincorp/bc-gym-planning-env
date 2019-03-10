@@ -80,8 +80,8 @@ def rotate_costmap(costmap, angle, center_pixel_coords=None, border_value=0):
     Rotate obstacle costmap around a particular center
     :param costmap: the 2d numpy array (the data of a costmap)
     :param angle: angle to rotate (in radians, world coordinates - positive angle is anticlockwise)
-    :param border_value: value to fill in when rotating
     :param center_pixel_coords: center of rotation in the pixel coordinates (None for center of the image)
+    :param border_value: value to fill in when rotating
     :return: the rotated mat
     '''
     # opencv uses image coordintates, we use world coordinates
