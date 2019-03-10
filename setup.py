@@ -19,7 +19,7 @@ setup(
     license='Braincorp',
     install_requires=['numpy>=1.13.3',
                       'gym',
-                      'attrs',
+                      'attrs==19.1.0',
                       'opencv-python'],
     package_data={'': ['input']},
     include_package_data=True,

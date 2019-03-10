@@ -12,7 +12,7 @@ import numpy as np
 
 
 from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
-from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint, blit, get_pixel_in_map_mask
+from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint, blit
 from bc_gym_planning_env.utilities.coordinate_transformations import world_to_pixel, pixel_to_world
 
 
