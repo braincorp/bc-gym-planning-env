@@ -85,7 +85,7 @@ def test_normalize_angles():
 
 try:
     # import cpp optimized implementation if possible and run the test only then
-    from brain.shining_utils.transform_utils import normalize_angle_impl
+    from brain.shining_utils.transform_utils import normalize_angle_impl  # pylint: disable=unused-import
 
     def test_angle_normalize_pybind_checks():
         """Test how does angle normalization handles non-contiguous input (should raise) or 2d input"""
