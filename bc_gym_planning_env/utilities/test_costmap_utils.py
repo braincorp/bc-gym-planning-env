@@ -212,8 +212,6 @@ def test_rotate_costmap():
     assert(rotated_data[non_free_indices[0], non_free_indices[1]] == CostMap2D.LETHAL_OBSTACLE)
 
 
-
-
 def is_robot_colliding_reference(robot_pose, footprint, costmap_data, origin, resolution):
     """
     Pure python implementation of is_robot_colliding
