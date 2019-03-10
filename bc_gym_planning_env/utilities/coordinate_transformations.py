@@ -216,9 +216,9 @@ def world_to_voxel(world_coords, origin, xy_resolution, z_resolution):
     :param world_coords array(N, 3)[float]: world 3d coordinates
     :param origin array(3)[float]: origin of the volume (x, y, z) in world coordinates
     :param xy_resolution float: resolution of the costmap in meters per pixel.
+    :param z_resolution Float: (length of voxel sides in world units)
     :return array(3)[int]: voxel coordinates in the volume
     '''
-    #     :param z_resolution Float: (length of voxel sides in world units)
     world_coords = np.asarray(world_coords)
     assert world_coords.shape[world_coords.ndim - 1] == 3
     resolution = np.array([xy_resolution, xy_resolution, z_resolution])

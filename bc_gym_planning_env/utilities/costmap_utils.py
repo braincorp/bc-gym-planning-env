@@ -77,6 +77,7 @@ def extract_egocentric_costmap(costmap_2d, ego_position_in_world,
 
 def rotate_costmap(costmap, angle, center_pixel_coords=None, border_value=0):
     '''
+    Rotate obstacle costmap around a particular center
     :param costmap: the 2d numpy array (the data of a costmap)
     :param angle: angle to rotate (in radians, world coordinates - positive angle is anticlockwise)
     :param border_value: value to fill in when rotating
@@ -166,5 +167,9 @@ except ImportError:
 def in_costmap_bounds(data, map_x, map_y):
     """
     whether a pixel at (map_x, map_y) is inside the costmap area
+    :param data: data array
+    :param map_x int: x coordinate
+    :param map_y int: y coordinate
+    :return bool: whether a pixel at (map_x, map_y) is inside the costmap area
     """
     return not (map_x < 0 or map_y < 0 or map_x >= data.shape[1] or map_y >= data.shape[0])
