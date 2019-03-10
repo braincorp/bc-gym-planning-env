@@ -83,17 +83,23 @@ def test_normalize_angles():
         np.testing.assert_array_almost_equal(normalize_angle(a), normalize_angle_reference(a))
 
 
-def test_angle_normalize_pybind_checks():
-    """Test how does angle normalization handles non-contiguous input (should raise) or 2d input"""
-    data = np.array([[0., np.pi + 0.1],
-                     [0., 0.2],
-                     [0., 2*np.pi+0.3]])
-    with pytest.raises(TypeError):
-        normalize_angle(data)
-    non_contiguous_data = data[:, 1]
-    assert not non_contiguous_data.flags['C_CONTIGUOUS']
-    with pytest.raises(TypeError):
-        normalize_angle(non_contiguous_data)
+try:
+    # import cpp optimized implementation if possible and run the test only then
+    from brain.shining_utils.transform_utils import normalize_angle_impl
+
+    def test_angle_normalize_pybind_checks():
+        """Test how does angle normalization handles non-contiguous input (should raise) or 2d input"""
+        data = np.array([[0., np.pi + 0.1],
+                         [0., 0.2],
+                         [0., 2*np.pi+0.3]])
+        with pytest.raises(TypeError):
+            normalize_angle(data)
+        non_contiguous_data = data[:, 1]
+        assert not non_contiguous_data.flags['C_CONTIGUOUS']
+        with pytest.raises(TypeError):
+            normalize_angle(non_contiguous_data)
+except ImportError:
+    pass
 
 
 def test_inverse_transform():
@@ -1691,7 +1697,6 @@ if __name__ == "__main__":
     test_project_poses_with_time_raises()
     test_fast_project_poses_wraparound()
     test_normalize_angles()
-    test_angle_normalize_pybind_checks()
     test_from_egocentric_to_global()
     test_from_global_to_egocentric()
     test_map_to_odom()

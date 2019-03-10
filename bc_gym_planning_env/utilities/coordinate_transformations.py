@@ -202,7 +202,8 @@ except ImportError:
         if not isinstance(origin, np.ndarray):
             origin = np.asarray(origin)
         assert world_coords.shape[world_coords.ndim - 1] == 2
-        return np.round((world_coords - origin) / resolution).astype(np.int)
+        anti_resolution = 1./resolution
+        return np.round((world_coords - origin) * anti_resolution).astype(np.int)
 
 
 def world_to_voxel(world_coords, origin, xy_resolution, z_resolution):
