@@ -24,9 +24,9 @@ setup(
     package_data={'': ['input']},
     include_package_data=True,
     extras_require={
-        'tests': ['pytest>=2.7.2',
-                  'pytest-pep8>=1.0.6',
-                  'pytest-xdist>=1.13.1'],
+        'tests': ['pytest==2.7.2',
+                  'pytest-pep8==1.0.6',
+                  'pytest-xdist==1.13.1'],
     },
     classifiers=[
         'Development Status :: 3 - Alpha',
