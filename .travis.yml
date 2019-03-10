@@ -3,5 +3,5 @@ language: python
 script:
      # install the package and test
      - pip install -e .[tests]
-     - py.test --pep8 -m pep8 -n0
-     - py.test -n0
+     - py.test --pep8 -m pep8 -n8
+     - py.test -n8
