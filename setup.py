@@ -7,6 +7,28 @@ from setuptools import setup, find_packages
 with open("README.md", "r") as f:
     long_description = f.read()
 
+
+import sys
+if sys.version_info[0] == 2:
+    extras_require={
+        'tests': ['pytest==2.7.2',
+                  'pytest-pep8==1.0.6',
+                  'pytest-xdist==1.13.1',
+                  'pylint==1.9.2',
+                  'astroid==1.6.5'
+                  ],
+    }
+elif sys.version_info[0] == 3:
+    extras_require={
+        'tests': ['pytest==4.3.0',
+                  'pytest-pep8==1.0.6',
+                  'pytest-xdist==1.26.1',
+                  'pylint==1.9.2',
+                  'astroid==1.6.5'
+                  ],
+    }
+
+
 setup(
     name='bc_gym_planning_env',
     version='0.0.1',
@@ -23,14 +45,7 @@ setup(
                       'opencv-python'],
     package_data={'': ['input']},
     include_package_data=True,
-    extras_require={
-        'tests': ['pytest==2.7.2',
-                  'pytest-pep8==1.0.6',
-                  'pytest-xdist==1.13.1',
-                  'pylint==1.9.2',
-                  'astroid==1.6.5'
-                  ],
-    },
+    extras_require=extras_require,
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
