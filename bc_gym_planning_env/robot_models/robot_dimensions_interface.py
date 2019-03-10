@@ -65,6 +65,7 @@ class IFootprintHeight(object):
     Extra characteristics of the robot height for perception algorithms
     """
     __metaclass__ = ABCMeta
+
     @staticmethod
     @abstractmethod
     def footprint_height():

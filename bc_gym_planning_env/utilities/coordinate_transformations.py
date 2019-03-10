@@ -197,10 +197,9 @@ except ImportError:
         """
         assert len(origin) == 2
 
-        if not isinstance(world_coords, np.ndarray):
-            world_coords = np.asarray(world_coords)
-        if not isinstance(origin, np.ndarray):
-            origin = np.asarray(origin)
+        assert isinstance(world_coords, np.ndarray)
+        assert isinstance(origin, np.ndarray)
+
         assert world_coords.shape[world_coords.ndim - 1] == 2
         anti_resolution = 1./resolution
         return np.round((world_coords - origin) * anti_resolution).astype(np.int)
