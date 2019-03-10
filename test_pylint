@@ -1,0 +1,22 @@
+#!/bin/bash
+source use_repo.sh
+
+# Robust way of locating script folder
+# from http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+SOURCE=${BASH_SOURCE:-$0}
+
+DIR="$( dirname "$SOURCE" )"
+while [ -h "$SOURCE" ]
+do
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+  DIR="$( cd -P "$( dirname "$SOURCE"  )" && pwd )"
+done
+DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+set -e
+
+time pylint --rcfile=pylint_rc bc_gym_planning_env
+
+# Check certain more strict rules on non-tests and sandboxes
+time pylint --rcfile=pylint_rc --disable=all --enable=protected-access,invalid-name --ignore-patterns="test_.*,tests_.*,.*_sandbox,sandbox_.*" bc_gym_planning_env

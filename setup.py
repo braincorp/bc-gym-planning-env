@@ -26,7 +26,10 @@ setup(
     extras_require={
         'tests': ['pytest==2.7.2',
                   'pytest-pep8==1.0.6',
-                  'pytest-xdist==1.13.1'],
+                  'pytest-xdist==1.13.1',
+                  'pylint==1.9.2',
+                  'astroid==1.6.5'
+                  ],
     },
     classifiers=[
         'Development Status :: 3 - Alpha',
