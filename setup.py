@@ -11,9 +11,9 @@ with open("README.md", "r") as f:
 import sys
 if sys.version_info[0] == 2:
     extras_require={
-        'tests': ['pytest==2.7.2',
+        'tests': ['pytest==4.3.0',
                   'pytest-pep8==1.0.6',
-                  'pytest-xdist==1.13.1',
+                  'pytest-xdist==1.26.1',
                   'pylint==1.9.2',
                   'astroid==1.6.5'
                   ],
