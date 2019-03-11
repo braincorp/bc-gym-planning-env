@@ -1,3 +1,4 @@
+""" Helper code for making TDWA real data planning environment """
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
@@ -7,15 +8,16 @@ import requests
 import shutil
 import pickle
 
-from bc_gym_planning_env.utilities.costmap_2d_python import CostMap2D
 from bc_gym_planning_env.utilities.artifacts_utils import decompress_tar_archive, get_cache_key_path
+
+from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
 
 
 def get_random_maps_squeeze_between_obstacle_in_corridor_on_path():
     """
     Download (or read from cache) randomly edited real world map with of a robot
     in a corridor with 3 square obstacles
-    :return: a tuple of 3 elements:
+    :return: a tuple of 3 elements
       - original realworld costmap of the corridor with 3 boxes
       - reference path that human took
       - tuple of 1000 randomized maps that were obstained by cutting and pasting 3 boxes randomly around

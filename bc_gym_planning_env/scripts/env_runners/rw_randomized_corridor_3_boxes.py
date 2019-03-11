@@ -1,3 +1,5 @@
+""" Experiment, running an example planning environment based on real
+data case of corridor with three boxes, along with some randomization """
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
@@ -5,9 +7,10 @@ from __future__ import division
 import numpy as np
 import time
 
-from bc_gym_planning_env.envs import EnvParams, PlanEnv
+from bc_gym_planning_env.envs.base.env import PlanEnv
 from bc_gym_planning_env.envs.rw_corridors.tdwa_test_environments import \
     get_random_maps_squeeze_between_obstacle_in_corridor_on_path
+from bc_gym_planning_env.envs.base.params import EnvParams
 
 if __name__ == '__main__':
 
@@ -22,8 +25,6 @@ if __name__ == '__main__':
         goal_spat_dist=1.0,
         goal_ang_dist=np.pi/2,
         dt=0.05,  # 20 Hz
-        path_limiter_spatial_precision=1.0,
-        path_limiter_angular_precision=np.pi/4,
         path_limiter_max_dist=5.0,
     )
 
@@ -34,8 +35,6 @@ if __name__ == '__main__':
     )
 
     env.reset()
-    env.step((0.0, 0.0))
-
     env.render()
 
     t = time.time()

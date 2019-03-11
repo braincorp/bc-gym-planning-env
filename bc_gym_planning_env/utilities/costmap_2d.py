@@ -1,20 +1,25 @@
+""" Costmap2d class to store data together, its origin and resolution"""
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 import numpy as np
-from bc_gym_planning_env.utilities.path_tools import world_to_pixel, pixel_to_world
 
+from bc_gym_planning_env.utilities.frozenarray import freeze_array
+from bc_gym_planning_env.utilities.coordinate_transformations import world_to_pixel, pixel_to_world
 
 CURRENT_ENCODING_VERSION = 1
 
 
 class CostMap2D(object):
     """
-    Helper class for working with CostMap
+    Stores a costmap: 2d array of data with (x, y) origin and float resolution in meters.
+    Example:
+        - Obstacle map of uint8 where value of the pixel means 'free space', 'obstacle', or 'unknown'
+        - Binary map of bool where value of pixels means presence of an object in the map (human or not)
     """
-    FREE_SPACE=0
-    LETHAL_OBSTACLE=254
-    NO_INFORMATION=255
+    FREE_SPACE = 0
+    LETHAL_OBSTACLE = 254
+    NO_INFORMATION = 255
 
     def __init__(self, data, resolution, origin):
         """
@@ -41,14 +46,22 @@ class CostMap2D(object):
         :param dtype: Data type for costmap
         :return: A CostMap2D object
         """
-        pixel_size = world_to_pixel(world_size, (0, 0), resolution)
+        pixel_size = world_to_pixel(np.asarray(world_size, dtype=np.float64), np.array((0., 0.)), resolution)
         data = np.zeros(pixel_size[::-1], dtype=dtype)
         return CostMap2D(data, resolution, np.asarray(world_origin, dtype=np.float64))
 
     def get_resolution(self):
+        """
+        Get resolution of the costmap - how many world units per one costmap unit
+        :return: resolution of the map
+        """
         return self._resolution
 
     def get_origin(self):
+        """
+        Get the origin point of the costmap
+        :return: the origin point of the costmap
+        """
         assert not self._origin.flags.writeable
         return self._origin
 
@@ -58,32 +71,42 @@ class CostMap2D(object):
         self._resolution = state['_resolution']
 
     def get_data(self):
+        """
+        Get the actual costmap pixels
+        :return: costmap pixels
+        """
         return self._data
 
     def in_bounds(self, map_x, map_y):
         """
         whether a pixel at (map_x, map_y) is inside the costmap area
+        :param map_x: pixel coord x
+        :param map_y: pixel coord y
+        :return bool: whether a pixel at (map_x, map_y) is inside the costmap area
         """
         return not (map_x < 0 or map_y < 0 or map_x >= self._data.shape[1] or map_y >= self._data.shape[0])
 
     def world_bounds(self):
-        '''
+        """
         Return (min_x, max_x, min_y, max_y) of map in world coordinates
-        '''
+        :return Tuple[float, float, float, float]: (min_x, max_x, min_y, max_y) of map in world coordinates
+        """
         x, y = self._origin
         return (x, x + self._resolution * self._data.shape[1], y, y + self._resolution * self._data.shape[0])
 
     def world_size(self):
-        '''
+        """
         Return (size_x, size_y) of map in world coordinates
-        '''
+        :return Tuple[float, float]: (size_x, size_y) of map in world coordinates
+        """
         xmin, xmax, ymin, ymax = self.world_bounds()
         return np.array([xmax-xmin, ymax-ymin])
 
     def world_center(self):
-        '''
+        """
         Return (x, y) of map center in world coordinates
-        '''
+        :return Tuple[float, float]: (x, y) of map center in world coordinates
+        """
         xmin, xmax, ymin, ymax = self.world_bounds()
         return np.array([xmax+xmin, ymax+ymin])*0.5
 
@@ -107,6 +130,10 @@ class CostMap2D(object):
         return pixel_to_world(pixel_coords, self._origin, self._resolution)
 
     def get_state(self):
+        """
+        Serialize the costmap.
+        :return Dict: serialized representation of the costmap
+        """
         return dict(
             version=CURRENT_ENCODING_VERSION,
             data=self._data,
@@ -116,19 +143,14 @@ class CostMap2D(object):
 
     @classmethod
     def from_state(cls, state):
-        assert(state['version'] == CURRENT_ENCODING_VERSION)
+        """
+        Deserialize and make a CostMap2D from saved serialized 'state'
+        :param state Dict: serialized representation of the costmap
+        :return CostMap2D: deserialized costmap
+        """
+        assert state['version'] == CURRENT_ENCODING_VERSION
         return CostMap2D(
             data=state['data'],
             resolution=state['resolution'],
             origin=freeze_array(state['origin']),
         )
-
-
-def freeze_array(array):
-    """
-    Make numpy array read-only
-    :param array: numpy array
-    :return: read-only numpy array
-    """
-    array.flags.writeable = False
-    return array

@@ -1,3 +1,4 @@
+""" Toolset for the path. """
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
@@ -7,15 +8,18 @@ import numpy as np
 
 import cv2
 
+from bc_gym_planning_env.utilities.coordinate_transformations import normalize_angle, diff_angles
+from bc_gym_planning_env.utilities.numpy_utils import fast_amin, fast_amax
+
 
 def get_blit_mask(patch, im, x, y):
     '''
     Helper for blit operations. Computes a blit mask given a patch
-    @param: patch A 2D numeric value mask with positive numbers being evaluated as true
-    @param im The 2/3D image to blit
-    @param x The X location on the image to place  the center of the patch
-    @param x The Y location on the image to place the center of the patch
-    @return A subset of the input image that the patch's bounding box encompasses. Note that this image may not
+    :param patch: patch A 2D numeric value mask with positive numbers being evaluated as true
+    :param im: The 2/3D image to blit
+    :param x: The X location on the image to place  the center of the patch
+    :param y: The Y location on the image to place the center of the patch
+    :return: A subset of the input image that the patch's bounding box encompasses. Note that this image may not
         necessarily be the same size as the patch. The second tuple is the patch being returned as a binary mask.
     '''
     patch_h, patch_w = patch.shape[:2]
@@ -55,7 +59,13 @@ def blit(patch, im, x, y, color, axis=None, alpha = 1.0):
     '''
     superimpose a binary patch, or the part of it that is within bounds,
     over image im, centered at (x, y), with given color
+    :param patch: patch A 2D numeric value mask with positive numbers being evaluated as true
+    :param im: The 2/3D image to blit
+    :param x: The X location on the image to place  the center of the patch
+    :param y: The Y location on the image to place the center of the patch
+    :param color: 3-tuple representing the color
     :param axis: tuple of color indices - which color axis to mark with 'color' (None - mark all)
+    :param alpha: transparency of the color
     '''
     image_slice, blit_mask = get_blit_mask(patch, im, x, y)
     if image_slice is None:
@@ -68,10 +78,16 @@ def blit(patch, im, x, y, color, axis=None, alpha = 1.0):
 
 
 def get_blit_values(patch, im, x, y):
-    '''
+    """
     like blit, but just returns the values of the im at the
-    pixels that would be set by blit
-    '''
+    pixels that would be set by blit.
+
+    :param patch: patch A 2D numeric value mask with positive numbers being evaluated as true
+    :param im: The 2/3D image to blit
+    :param x: The X location on the image to place  the center of the patch
+    :param y: The Y location on the image to place the center of the patch
+    :return: returns the values of the im at the pixels that would be set by blit
+    """
     image_slice, blit_mask = get_blit_mask(patch, im, x, y)
     if image_slice is None:
         return np.empty((0,) + im.shape[2:], dtype=im.dtype)
@@ -82,7 +98,9 @@ def get_blit_values(patch, im, x, y):
         return image_slice[blit_mask]
 
 
-def get_pixel_footprint(angle, robot_footprint, map_resolution, fill=True):
+try:
+    from brain.shining_utils.costmap_utils import get_pixel_footprint_impl
+    get_pixel_footprint = get_pixel_footprint_impl
     '''
     Return a binary image of a given robot footprint, in pixel coordinates,
     rotated over the appropriate angle range.
@@ -92,79 +110,64 @@ def get_pixel_footprint(angle, robot_footprint, map_resolution, fill=True):
         If a single number, a single footprint at that angle will be returned
     robot_footprint: n x 2 numpy array with ROS-style footprint (x, y coordinates),
         in metric units, oriented at 0 angle
-    map_resolution:
-    :param angle Float: orientation of the robot
+    map_resolution: 
+    :param angle Float: orientation of the robot 
     :param robot_footprint array(N, 2)[float64]: n x 2 numpy array with ROS-style footprint (x, y coordinates),
         in metric units, oriented at 0 angle
-    :param map_resolution Float: length in metric units of the side of a pixel
+    :param map_resolution Float: length in metric units of the side of a pixel 
     :param fill bool: if True, the footprint will be solid; if False, only the contour will be traced
-    :return array(K, M)[uint8]: image of the footprint drawn on the image in white
+    :return array(K, M)[uint8]: image of the footprint drawn on the image in white 
     '''
-    assert not isinstance(angle, tuple)
-    angles = [angle]
-    m = np.empty((2, 2, len(angles)))  # stack of 2 x 2 matrices to rotate the footprint across all desired angles
-    c, s = np.cos(angles), np.sin(angles)
-    m[0, 0, :], m[0, 1, :], m[1, 0, :], m[1, 1, :] = (c, -s, s, c)
-    rot_pix_footprints = np.rollaxis(np.dot(robot_footprint / map_resolution, m), -1)  # n_angles x n_footprint_corners x 2
-    # From all the possible footprints, get the outer corner
-    footprint_corner = np.maximum(np.amax(rot_pix_footprints.reshape(-1, 2), axis=0),
-                                  -np.amin(rot_pix_footprints.reshape(-1, 2), axis=0))
-    pic_half_size = np.ceil(footprint_corner).astype(np.int32)
-    int_footprints = np.round(rot_pix_footprints).astype(np.int32)
-    # get unique int footprints to save time; using http://stackoverflow.com/questions/16970982/find-unique-rows-in-numpy-array
-    flat_int_footprints = int_footprints.reshape(len(angles), -1)
-    row_view = np.ascontiguousarray(flat_int_footprints).view(np.dtype((np.void, flat_int_footprints.dtype.itemsize * flat_int_footprints.shape[1])))
-    _, idx = np.unique(row_view, return_index=True)
-    unique_int_footprints = int_footprints[idx]
-    kernel = np.zeros(2 * pic_half_size[::-1] + 1, dtype=np.uint8)
-    for f in unique_int_footprints:
-        if fill:
-            cv2.fillPoly(kernel, [f + pic_half_size], (255, 255, 255))
-        else:
-            cv2.polylines(kernel, [f + pic_half_size], 1, (255, 255, 255))
-    return kernel
-
-
-def world_to_pixel(world_coords, origin, resolution):
-    """
-    Convert a numpy set of world coordinates (... x 2 numpy array)
-    to pixel coordinates, given origin ((x, y) in world coordinates)
-    and resolution (in world units per pixel)
-
-    The returned array is of type np.int, same shape as world_coords
-
-    :param world_coords: An Array(..., 2)[float] array of (x, y) world coordinates in meters.
-    :param origin: A (x, y) point representing the location of the origin in meters.
-    :param resolution: Resolution in meters/pixel.
-    :returns: An Array(..., 2)[int] of (x, y) pixel coordinates
-    """
-    assert len(origin) == 2
-
-    if not isinstance(world_coords, np.ndarray):
-        world_coords = np.asarray(world_coords)
-    if not isinstance(origin, np.ndarray):
-        origin = np.asarray(origin)
-    assert world_coords.shape[world_coords.ndim - 1] == 2
-    return np.round((world_coords - origin) / resolution).astype(np.int)
-
-
-def pixel_to_world(pixel_coords, origin, resolution):
-    '''
-    Convert a numpy set of pixel coordinates (... x 2 numpy array)
-    to world coordinates, given origin ((x, y) in world coordinates) and
-    resolution (in world units per pixel)
-
-    The returned array is of type np.float32, same shape as pixel_coords
-    '''
-    pixel_coords = np.asarray(pixel_coords)
-    assert pixel_coords.shape[pixel_coords.ndim - 1] == 2
-    return pixel_coords.astype(np.float32) * resolution + np.array(origin, dtype=np.float32)
+except ImportError:
+    def get_pixel_footprint(angle, robot_footprint, map_resolution, fill=True):
+        '''
+        Return a binary image of a given robot footprint, in pixel coordinates,
+        rotated over the appropriate angle range.
+        Point (0, 0) in world coordinates is in the center of the image.
+        angle_range: if a 2-tuple, the robot footprint will be rotated over this range;
+            the returned footprint results from superimposing the footprint at each angle.
+            If a single number, a single footprint at that angle will be returned
+        robot_footprint: n x 2 numpy array with ROS-style footprint (x, y coordinates),
+            in metric units, oriented at 0 angle
+        map_resolution:
+        :param angle Float: orientation of the robot
+        :param robot_footprint array(N, 2)[float64]: n x 2 numpy array with ROS-style footprint (x, y coordinates),
+            in metric units, oriented at 0 angle
+        :param map_resolution Float: length in metric units of the side of a pixel
+        :param fill bool: if True, the footprint will be solid; if False, only the contour will be traced
+        :return array(K, M)[uint8]: image of the footprint drawn on the image in white
+        '''
+        assert not isinstance(angle, tuple)
+        angles = [angle]
+        m = np.empty((2, 2, len(angles)))  # stack of 2 x 2 matrices to rotate the footprint across all desired angles
+        c, s = np.cos(angles), np.sin(angles)
+        m[0, 0, :], m[0, 1, :], m[1, 0, :], m[1, 1, :] = (c, -s, s, c)
+        rot_pix_footprints = np.rollaxis(np.dot(robot_footprint / map_resolution, m), -1)  # n_angles x n_footprint_corners x 2
+        # From all the possible footprints, get the outer corner
+        footprint_corner = np.maximum(np.amax(rot_pix_footprints.reshape(-1, 2), axis=0),
+                                      -np.amin(rot_pix_footprints.reshape(-1, 2), axis=0))
+        pic_half_size = np.ceil(footprint_corner).astype(np.int32)
+        int_footprints = np.round(rot_pix_footprints).astype(np.int32)
+        # get unique int footprints to save time; using http://stackoverflow.com/questions/16970982/find-unique-rows-in-numpy-array
+        flat_int_footprints = int_footprints.reshape(len(angles), -1)
+        row_view = np.ascontiguousarray(flat_int_footprints).view(np.dtype((np.void, flat_int_footprints.dtype.itemsize * flat_int_footprints.shape[1])))
+        _, idx = np.unique(row_view, return_index=True)
+        unique_int_footprints = int_footprints[idx]
+        kernel = np.zeros(2 * pic_half_size[::-1] + 1, dtype=np.uint8)
+        for f in unique_int_footprints:
+            if fill:
+                cv2.fillPoly(kernel, [f + pic_half_size], (255, 255, 255))
+            else:
+                cv2.polylines(kernel, [f + pic_half_size], 1, (255, 255, 255))
+        return kernel
 
 
 def ensure_float_numpy(data):
-    '''
-    Transforms python array to numpy or makes sure that numpy array is float32 or 64
-    '''
+    """
+    Transforms python list or tuple to numpy or makes sure that numpy array is float32 or 64
+    :param data: a python list, tuple or numpy array.
+    :return np.ndarray: An array that is floats for sure.
+    """
     if isinstance(data, (list, tuple)):
         return np.array(data, dtype=float)
     else:
@@ -251,13 +254,17 @@ def orient_path(path, robot_pose=None, final_pose=None, max_movement_for_turn_in
     :param max_movement_for_turn_in_place: float: points within this distance are considered as turn-in-place
     :return: np.ndarray: N * 3 path with orientation
     """
-    if len(path) < 2:
-        return path
     path = ensure_float_numpy(path)
 
     # keep the position the same
     oriented_path = np.zeros((len(path), 3), dtype=path.dtype)
+    if len(path) == 0:
+        return oriented_path
+    assert path.shape[1] == 2, 'The shape[1] of path is {}, which is not 2'.format(path.shape[1])
     oriented_path[:, :2] = path[:, :2]
+    if len(path) == 1:
+        oriented_path[0, 2] = 0.
+        return oriented_path
 
     path_diff = path[1:, :] - path[0: -1, :]
     path_angles = np.arctan2(path_diff[:, 1], path_diff[:, 0])
@@ -288,27 +295,12 @@ def orient_path(path, robot_pose=None, final_pose=None, max_movement_for_turn_in
     return oriented_path
 
 
-
-def diff_angles(a1, a2):
-    '''
-    normalized a1 - a2
-    '''
-    return normalize_angle(a1-a2)
-
-
-def normalize_angle(z):
-    '''
-    Normalize angles to -pi to pi
-    # http://stackoverflow.com/questions/15927755/opposite-of-numpy-unwrap
-    '''
-    return (np.array(z) + np.pi) % (2*np.pi) - np.pi
-
-
 def path_velocity(path):
-    '''
+    """
+    Compute velocities of the path.
     :param path: n x 4 array of (t, x, y, angle)
     :return: arrays of v and w along the path
-    '''
+    """
     path = np.asarray(path)
     diffs = np.diff(path, axis=0)
     dt = diffs[:, 0]
@@ -332,6 +324,16 @@ def path_velocity(path):
 
 
 def draw_arrow(image, p, q, color, arrow_magnitude=5, thickness=1, line_type=8, shift=0):
+    """Draw an arrow on an image.
+    :param image np.ndarray(h, w, c): image to draw the image onto
+    :param p Tuple[int, int]: arrows goes from this point
+    :param q Tuple[int, int]: arrows goes to this point
+    :param color Tuple[int, int, int]: of this color
+    :param arrow_magnitude int: how prominent the arrow shuold be
+    :param thickness int: thickness of the arrow
+    :param line_type int: what is cv2 line type
+    :param shift int: should arrow be shifted
+    """
     # adapted from http://mlikihazar.blogspot.com.au/2013/02/draw-arrow-opencv.html
     # draw arrow tail
     p = (int(p[0]), int(p[1]))
@@ -352,14 +354,14 @@ def draw_arrow(image, p, q, color, arrow_magnitude=5, thickness=1, line_type=8, 
 
 
 def pose_distances(pose0, pose1):
-    '''
+    """
     Determine linear and angular difference between poses
-    :param pose0: (x, y, angle) or array of such poses
-    :param pose1: (x, y, angle) or array of such poses
+    :param pose0: (x, y, angle) or array of pose number one
+    :param pose1: (x, y, angle) or array of pose number two
     :return: linear and angular distances
-    '''
-    pose0 = np.asarray(pose0)
-    pose1 = np.asarray(pose1)
+    """
+    assert isinstance(pose0, np.ndarray)
+    assert isinstance(pose1, np.ndarray)
     assert pose0.shape == pose1.shape
 
     return np.hypot(pose0[..., 0] - pose1[..., 0], pose0[..., 1] - pose1[..., 1]),\
@@ -370,9 +372,10 @@ def limit_path_index(path, max_dist, max_angle=np.inf, min_length=0):
     """
     From the given path take only the number of points that will not exceed
     the distance or angle criterion (whichever is less).
-    :param max_dist - max distance along the path
-    :param max_angle - max rotation along the path
-    :param min_length - don't cut shorter than that
+    :param path np.ndarray(n, 3): (x, y, theta) of the path
+    :param max_dist: max distance along the path
+    :param max_angle: max rotation along the path
+    :param min_length: don't cut shorter than that
 
     :return: cutoff index that should *NOT* be included in the path.
     """
@@ -394,7 +397,10 @@ def limit_path_index(path, max_dist, max_angle=np.inf, min_length=0):
 def parallel_distances(pose, path_poses):
     """
     Signed projection of the vector from path_poses to pose along the
-    direction given by path_pose orientation
+    direction given by path_pose orientation.
+    :param pose np.ndarray(3): (x, y, theta) of the robot
+    :param path_poses np.ndarray(n, 3): (x, y, theta) of the path
+    :return np.ndarray(n): the projection distances
     """
     return np.cos(path_poses[:, 2]) * (pose[0] - path_poses[:, 0]) + np.sin(path_poses[:, 2]) * (pose[1] - path_poses[:, 1])
 
@@ -402,11 +408,14 @@ def parallel_distances(pose, path_poses):
 def find_reached_indices(pose, segment, spatial_precision, angular_precision, parallel_distance_threshold=None):
     """
     Walk along the path and determine which point we have reached; a point
-        is reached if it is so either wrt the original path or the
-        deformed path.
+    is reached if it is so either wrt the original path or the
+    deformed path.
 
     :param pose: (x, y, theta) of the robot
     :param segment: m x 3 points corresponding to the segment deformed by the elastic planner
+    :param spatial_precision float: spatial precision
+    :param angular_precision float: angular precision
+    :param parallel_distance_threshold float float: maximum allowed parallel distance
     :return: all reached indices
     """
     assert len(segment) > 0
@@ -427,7 +436,10 @@ def find_last_reached(pose, segment, spatial_precision, angular_precision, paral
         deformed path.
 
     :param pose: (x, y, theta) of the robot
-    :param segment: m x 3 points corresponding to the segment deformed by the elastic planner
+    :param segment np.ndarray(m, 3): m x 3 points corresponding to the segment deformed by the elastic planner
+    :param spatial_precision float: spatial precision
+    :param angular_precision float: angular precision
+    :param parallel_distance_threshold float float: maximum allowed parallel distance
     :return: the max index in the segment that is reached
     """
     reached_idx = find_reached_indices(pose, segment, spatial_precision, angular_precision, parallel_distance_threshold)
@@ -437,10 +449,14 @@ def find_last_reached(pose, segment, spatial_precision, angular_precision, paral
 
 
 def distance_to_segments(point, segment_origins, segment_ends):
-    '''
+    """
     Returns the shortest distance from the given point to a sequence
     of segments defined by (n x 2) matrices segment_origins and segment_ends.
-    '''
+    :param point np.ndarray(2)): the point to measure
+    :param segment_origins np.ndarray(n, 2): beginnings of the segments in 2d
+    :param segment_ends np.ndarray(n, 2): endings of the segments in 2d
+    :return float: the closest distance to some segment from give segment list
+    """
     segment_ends = np.asarray(segment_ends)
     segment_origins = np.asarray(segment_origins)
     v = segment_ends - segment_origins
@@ -454,10 +470,81 @@ def distance_to_segments(point, segment_origins, segment_ends):
     return np.hypot(point[0] - closest_points[:, 0], point[1] - closest_points[:, 1])
 
 
+def distances_to_segment(points, segment_origin, segment_end):
+    '''
+    Returns the shortest distance from the given points, defined by an
+    n x 2 matrix, to the segment defined by 2-vectors segment_origin and segment_end.
+    :param points array(N, 2)[float]: (x, y) array of points
+    :param segment_origin array(2)[float]: (x, y) origin of a segment
+    :param segment_end array(2)[float]: (x, y) end of a segment
+    :return array(N)[float]: distances
+    '''
+    segment_end = np.asarray(segment_end)
+    segment_origin = np.asarray(segment_origin)
+    v = segment_end - segment_origin
+    v_norm_square = np.sum(v * v)
+    # mu will be a scalar determining the position of the projection of point on each segment
+    # mu is normalized so that 0 is at the segment origin, 0.5 the midpoint, 1 the segment end
+    mu = np.sum((points - segment_origin) * v, axis=1) / (v_norm_square + 1e-12)
+    # clip mu to [0, 1]: if the projection is outside the segment, the closest point is the vertex
+    mu = np.clip(mu, 0., 1.)
+    closest_points = segment_origin + mu[:, None] * v
+    return np.hypot(points[:, 0] - closest_points[:, 0], points[:, 1] - closest_points[:, 1])
+
+
+def distances_to_multiple_segments(point, segment_origins, segment_ends):
+    '''
+    Returns the shortest distances from the given point (x, y), to the segments defined by nx2-vectors segment_origins and segment_ends.
+    :param point array(2)[float]: (x, y) a point
+    :param segment_origins array(N, 2)[float]: array of (x, y) origins of segments
+    :param segment_ends array(N, 2)[float]: array of (x, y) ends of segments
+    :return array(N)[float]: distances
+    '''
+    point = np.asarray(point)
+    segment_origins = np.asarray(segment_origins)
+    segment_ends = np.asarray(segment_ends)
+    assert segment_origins.shape == segment_ends.shape
+    assert point.shape == (2,)
+    v = segment_ends - segment_origins
+    v_norm_squares = np.sum(v * v, axis=1)
+    # mu will be a scalar determining the position of the projection of point on each segment
+    # mu is normalized so that 0 is at the segment origin, 0.5 the midpoint, 1 the segment end
+    mu = np.sum((point - segment_origins) * v, axis=1) / (v_norm_squares + 1e-12)
+    # clip mu to [0, 1]: if the projection is outside the segment, the closest point is the vertex
+    mu = np.clip(mu, 0., 1.)
+    closest_points = segment_origins + mu[:, None] * v
+    return np.hypot(point[0] - closest_points[:, 0], point[1] - closest_points[:, 1])
+
+
 def inscribed_radius(footprint):
     '''
     Returns the shortest distance from (0, 0) to any of the sides
     of a footprint (n x 2 numpy array of consecutive vertices)
+    :param footprint array(n, 2)[float]: n x 2 numpy array with ROS-style footprint (x, y coordinates),
+        in metric units, oriented at 0 angle
+    :return float: inscribed radius
     '''
     segment_ends = np.roll(footprint, -1, axis=0)
-    return np.amin(distance_to_segments((0, 0), footprint, segment_ends))
+    return fast_amin(distance_to_segments((0, 0), footprint, segment_ends))
+
+
+def circumscribed_radius(footprint):
+    '''
+    Returns the longest distance from (0, 0) to any of the sides
+    of a footprint (n x 2 numpy array of consecutive vertices)
+    :param footprint array(n, 2)[float]: n x 2 numpy array with ROS-style footprint (x, y coordinates),
+        in metric units, oriented at 0 angle
+    :return float: circumscribed radius
+    '''
+    return fast_amax(np.linalg.norm(footprint, axis=1))
+
+
+def get_pixel_in_map_mask(map_shape, pixels):
+    """
+    Filter for pixels that fall inside the costmap.
+    :param map_shape: (size_y, size_x) of costmap
+    :param pixels: array(N, 2) of (x, y) pixel coordinates
+    :return: array(N)[bool] which can be used to mask in pixels that are inside the map.
+    """
+    ixs = (pixels[:, 1] >= 0) & (pixels[:, 1] < map_shape[0]) & (pixels[:, 0] >= 0) & (pixels[:, 0] < map_shape[1])
+    return ixs
