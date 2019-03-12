@@ -178,6 +178,8 @@ def tricycle_velocity_dynamic_model_step(
     new_linear_velocity = (current_v + linear_acceleration*dt)
     new_angular_velocity = (current_w + angular_acceleration*dt)
 
+    new_linear_velocity = max(new_linear_velocity, 0.0)
+
     return new_linear_velocity, new_angular_velocity
 
 
