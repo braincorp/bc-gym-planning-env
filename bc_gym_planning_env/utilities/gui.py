@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 import os
 from sys import platform
+from bc_gym_planning_env.envs.base.action import Action
 
 
 class OpenCVGui(object):
@@ -139,7 +140,7 @@ class KeyCapturePlay(object):
         print(80 * '=')
         print(action)
 
-        self._action = action
+        self._action = Action(command=action)
 
     def env_step(self):
         """ Perform a step of the environment """
