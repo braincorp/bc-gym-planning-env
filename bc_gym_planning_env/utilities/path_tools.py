@@ -428,7 +428,7 @@ def find_reached_indices(pose, segment, spatial_precision, angular_precision, pa
     return reached_idx
 
 
-def find_last_reached(pose, segment, spatial_precision, angular_precision, parallel_distance_threshold=None):
+def find_last_reached(pose, segment, spatial_precision, angular_precision, parallel_distance_threshold=float('inf')):
     """
     Walk along the path and determine which point we have reached; a point
         is reached if it is so either wrt the original path or the
@@ -438,7 +438,7 @@ def find_last_reached(pose, segment, spatial_precision, angular_precision, paral
     :param segment np.ndarray(m, 3): m x 3 points corresponding to the segment deformed by the elastic planner
     :param spatial_precision float: spatial precision
     :param angular_precision float: angular precision
-    :param parallel_distance_threshold float float: maximum allowed parallel distance
+    :param parallel_distance_threshold float: maximum allowed parallel distance
     :return: the max index in the segment that is reached
     """
     reached_idx = find_reached_indices(pose, segment, spatial_precision, angular_precision, parallel_distance_threshold)
