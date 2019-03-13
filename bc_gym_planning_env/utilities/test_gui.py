@@ -4,7 +4,10 @@ from __future__ import division
 
 from bc_gym_planning_env.utilities.gui import KeyCapturePlay
 from bc_gym_planning_env.envs.synth_turn_env import RandomAisleTurnEnv
-from unittest.mock import MagicMock
+try:
+    from unittest.mock import MagicMock
+except ImportError:
+    from mock import MagicMock
 
 
 def test_key_capture_play():
