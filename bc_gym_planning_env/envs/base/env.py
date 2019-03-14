@@ -16,7 +16,8 @@ from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint, find_l
 from bc_gym_planning_env.utilities.path_tools import refine_path
 from bc_gym_planning_env.envs.base.draw import draw_environment
 from bc_gym_planning_env.envs.base.obs import Observation
-from bc_gym_planning_env.envs.base import spaces
+# from bc_gym_planning_env.envs.base import spaces
+import gym.spaces as spaces
 from bc_gym_planning_env.envs.base.reward import ContinuousRewardProvider, generate_initial_state
 from bc_gym_planning_env.utilities.gui import OpenCVGui
 
@@ -133,8 +134,8 @@ class PlanEnv(object):
 
         # Properties, things without state
         self.action_space = spaces.Box(
-            low=np.array([-self._robot.get_max_front_wheel_speed() / 2, -np.pi/2]),
-            high=np.array([self._robot.get_max_front_wheel_speed(), np.pi/2]),
+            low=np.array([-self._robot.get_max_front_wheel_speed() / 2, -np.pi/3]),
+            high=np.array([self._robot.get_max_front_wheel_speed(), np.pi/3]),
             dtype=np.float32)
         self.reward_range = (0.0, 1.0)
         self._gui = OpenCVGui()
@@ -285,7 +286,7 @@ class PlanEnv(object):
         we have timed out or the robot has collided.
         :return bool: are we done with this planning environment?
         """
-        goal_reached = self._reward_provider.done()
+        goal_reached = self._reward_provider.done(self._state)
         timed_out = self._has_timed_out()
         done = goal_reached or timed_out or self._state.robot_collided
 
