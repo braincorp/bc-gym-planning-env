@@ -27,21 +27,30 @@ class ContinuousRewardProviderState(object):
         """ Get the current goal pose
         :return np.ndarray(3): The current goal pose
         """
-        if self.target_idx < len(self.path):
-            return self.path[self.target_idx]
-        else:
-            raise ValueError("No path left to follow.")
+        return self.path[-1]
+        # if self.target_idx < len(self.path):
+        #     return self.path[self.target_idx]
+        # else:
+        #     raise ValueError("No path left to follow.")
 
     def current_path(self):
         """ Get the current path
         :return np.ndarray(N, 3): the piece of static path left to follow
         """
-        return self.path[self.target_idx:]
+        return self.path
 
-    def done(self):
+    def done(self, state):
         """ Are we done?
         :return bool: True if we are done with this environment. """
-        return self.target_idx > len(self.path) - 1
+        robot_pose = state.pose
+        spat_dist, ang_dist = pose_distances(self.current_goal_pose(), robot_pose)
+        spat_near = spat_dist < 1.0
+        # ang_near = ang_dist < self._params.goal_ang_dist
+        ang_near = True  # ang_dist < self._params.goal_ang_dist
+        goal_reached = spat_near and ang_near
+
+        return goal_reached
+        # return self.target_idx > len(self.path) - 1
 
 
 @attr.s
@@ -114,14 +123,14 @@ class ContinuousRewardProvider(object):
         """
         return self._state.current_path()
 
-    def done(self):
+    def done(self, state):
         """
         Are there any more goals to accomplish?
         Enviornment can have more criteria for finishing the episode,
         e.g. getting out of bounds etc.
         :return float: whether this episode is finished or not
         """
-        return self._state.done()
+        return self._state.done(state)
 
     def reward(self, state):
         """
@@ -132,40 +141,53 @@ class ContinuousRewardProvider(object):
         :param state State: full state of the environment
         :return float: the reward
         """
-        if self._state.done():
-            return 0.0
 
-        # See if you have reached any new point
-        last_reached_idx = find_last_reached(
-            state.pose,
-            self._state.path,
-            self._params.spatial_precision,
-            self._params.angular_precision
-        )
+        reward = -0.05
 
-        if last_reached_idx is not None and last_reached_idx >= self._state.target_idx:
-            # assign the reward for reaching a waypoint
-            next_idx = last_reached_idx + 1
+        dist_to_goal, _ = pose_distances(self._state.current_goal_pose(), state.pose)
+        reward += self._state.min_spat_dist_so_far - dist_to_goal
+        self._state.min_spat_dist_so_far = dist_to_goal
 
-            self._state.target_idx = next_idx
+        if state.robot_collided:
+            reward -= 100
 
-            # set up the new waypoint
-            if not self._state.done():
-                dist_to_goal, _ = pose_distances(self._state.current_goal_pose(), state.pose)
-                self._state.min_spat_dist_so_far = dist_to_goal
-            else:
-                self._state.min_spat_dist_so_far = 0.0
+        return reward
 
-            return 1.0
-        else:
-            # maybe we get some progress towards current waypoint
-            dist_to_goal, _ = pose_distances(self._state.current_goal_pose(), state.pose)
 
-            if dist_to_goal < self._state.min_spat_dist_so_far:
-                # We progressed toward the current waypoint
-                reward = self._state.min_spat_dist_so_far - dist_to_goal
-                self._state.min_spat_dist_so_far = dist_to_goal
-                return reward * self._params.spatial_progress_multiplier
-            else:
-                # We didn't do any progress
-                return 0.0
+        # if self._state.done():
+        #     return 0.0
+        #
+        # # See if you have reached any new point
+        # last_reached_idx = find_last_reached(
+        #     state.pose,
+        #     self._state.path,
+        #     self._params.spatial_precision,
+        #     self._params.angular_precision
+        # )
+        #
+        # if last_reached_idx is not None and last_reached_idx >= self._state.target_idx:
+        #     # assign the reward for reaching a waypoint
+        #     next_idx = last_reached_idx + 1
+        #
+        #     self._state.target_idx = next_idx
+        #
+        #     # set up the new waypoint
+        #     if not self._state.done():
+        #         dist_to_goal, _ = pose_distances(self._state.current_goal_pose(), state.pose)
+        #         self._state.min_spat_dist_so_far = dist_to_goal
+        #     else:
+        #         self._state.min_spat_dist_so_far = 0.0
+        #
+        #     return 1.0
+        # else:
+        #     # maybe we get some progress towards current waypoint
+        #     dist_to_goal, _ = pose_distances(self._state.current_goal_pose(), state.pose)
+        #
+        #     if dist_to_goal < self._state.min_spat_dist_so_far:
+        #         # We progressed toward the current waypoint
+        #         reward = self._state.min_spat_dist_so_far - dist_to_goal
+        #         self._state.min_spat_dist_so_far = dist_to_goal
+        #         return reward * self._params.spatial_progress_multiplier
+        #     else:
+        #         # We didn't do any progress
+        #         return 0.0
