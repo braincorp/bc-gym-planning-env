@@ -143,7 +143,7 @@ class ContinuousRewardProvider(object):
             self._params.angular_precision
         )
 
-        if last_reached_idx >= self._state.target_idx:
+        if last_reached_idx is not None and last_reached_idx >= self._state.target_idx:
             # assign the reward for reaching a waypoint
             next_idx = last_reached_idx + 1
 
