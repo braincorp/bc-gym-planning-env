@@ -82,7 +82,7 @@ def train_model():
 
     # Set schedule for gradient clipping.
     cliprange = LinearSchedule(
-        initial_value=0.05,
+        initial_value=0.01,
         final_value=0.0
     )
 
@@ -92,13 +92,13 @@ def train_model():
         settings=OnPolicyIterationReinforcerSettings(
             discount_factor=0.99,
             batch_size=256,
-            experience_replay=4
+            experience_replay=1
         ),
         model=model,
         algo=PpoPolicyGradient(
             entropy_coefficient=0.01,
             value_coefficient=0.5,
-            max_grad_norm=0.5,
+            max_grad_norm=0.02,
             cliprange=cliprange
         ),
         env_roller=StepEnvRoller(
