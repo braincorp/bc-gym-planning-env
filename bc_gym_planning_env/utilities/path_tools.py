@@ -405,7 +405,7 @@ def parallel_distances(pose, path_poses):
     return np.cos(path_poses[:, 2]) * (pose[0] - path_poses[:, 0]) + np.sin(path_poses[:, 2]) * (pose[1] - path_poses[:, 1])
 
 
-def find_reached_indices(pose, segment, spatial_precision, angular_precision, parallel_distance_threshold=float('inf')):
+def find_reached_indices(pose, segment, spatial_precision, angular_precision, parallel_distance_threshold=None):
     """
     Walk along the path and determine which point we have reached; a point
     is reached if it is so either wrt the original path or the
@@ -415,20 +415,21 @@ def find_reached_indices(pose, segment, spatial_precision, angular_precision, pa
     :param segment: m x 3 points corresponding to the segment deformed by the elastic planner
     :param spatial_precision float: spatial precision
     :param angular_precision float: angular precision
-    :param parallel_distance_threshold float: maximum allowed parallel distance
+    :param parallel_distance_threshold float float: maximum allowed parallel distance
     :return: all reached indices
     """
     assert len(segment) > 0
-    assert parallel_distance_threshold >= 0
+    if parallel_distance_threshold is None:
+        parallel_distance_threshold = -spatial_precision / 9
     dist = np.hypot(segment[:, 0] - pose[0], segment[:, 1] - pose[1])
     angle = np.abs(diff_angles(pose[2], segment[:, 2]))
     parallel_dist = parallel_distances(pose, segment)
     reached_idx = np.where(np.logical_and(np.logical_and(dist < spatial_precision, angle < angular_precision),
-                                          parallel_dist <= parallel_distance_threshold))[0]
+                                          parallel_dist >= parallel_distance_threshold))[0]
     return reached_idx
 
 
-def find_last_reached(pose, segment, spatial_precision, angular_precision, parallel_distance_threshold=float('inf')):
+def find_last_reached(pose, segment, spatial_precision, angular_precision, parallel_distance_threshold=None):
     """
     Walk along the path and determine which point we have reached; a point
         is reached if it is so either wrt the original path or the
@@ -438,7 +439,7 @@ def find_last_reached(pose, segment, spatial_precision, angular_precision, paral
     :param segment np.ndarray(m, 3): m x 3 points corresponding to the segment deformed by the elastic planner
     :param spatial_precision float: spatial precision
     :param angular_precision float: angular precision
-    :param parallel_distance_threshold float: maximum allowed parallel distance
+    :param parallel_distance_threshold float float: maximum allowed parallel distance
     :return: the max index in the segment that is reached
     """
     reached_idx = find_reached_indices(pose, segment, spatial_precision, angular_precision, parallel_distance_threshold)
