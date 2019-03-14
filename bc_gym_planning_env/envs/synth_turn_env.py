@@ -178,6 +178,7 @@ def path_and_costmap_from_config(params):
         Wall(from_pt=c, to_pt=d),
         Wall(from_pt=d, to_pt=e),
         Wall(from_pt=j, to_pt=g),
+        Wall(from_pt=(a+i)/2, to_pt=g),
         Wall(from_pt=g, to_pt=h)
     ]
 
