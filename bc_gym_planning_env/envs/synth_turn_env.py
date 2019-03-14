@@ -18,6 +18,8 @@ from bc_gym_planning_env.utilities.coordinate_transformations import from_global
 from bc_gym_planning_env.utilities.costmap_utils import extract_egocentric_costmap
 from gym.envs.registration import register
 import gym
+from bc_gym_planning_env.utilities.map_drawing_utils import get_pixel_footprint_for_drawing, get_physical_angle_from_drawing
+from bc_gym_planning_env.utilities.path_tools import blit, refine_path
 
 
 @attr.s
@@ -423,6 +425,16 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
             resulting_origin=(self._egomap_x_bounds[0], self._egomap_y_bounds[0]),
             resulting_size=(self._egomap_x_bounds[1] - self._egomap_x_bounds[0],
                             self._egomap_y_bounds[1] - self._egomap_y_bounds[0]))
+
+        px = int((0. - self._egomap_x_bounds[0]) / costmap.get_resolution())
+        py = int((0. - self._egomap_y_bounds[0]) / costmap.get_resolution())
+        angle = 0.
+        color = 100
+        map_resolution = costmap.get_resolution()
+        footprint = self._robot.get_footprint()
+        image = ego_costmap.get_data()
+        kernel = get_pixel_footprint_for_drawing(get_physical_angle_from_drawing(angle), footprint, map_resolution)
+        blit(kernel, image, px, py, color)
 
         ego_path = from_global_to_egocentric(rich_observation.path, robot_pose)
         obs = np.expand_dims(ego_costmap.get_data(), -1)
