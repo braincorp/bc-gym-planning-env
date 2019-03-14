@@ -56,18 +56,13 @@ def train_model():
 
     # Set random seed in python std lib, numpy and pytorch
     set_seed(seed)
-
-    # vec_env = butils.make_vec_env(
-    #     env_id='EgoCostmapAsImgRandomTurnRoboPlanning-v0',
-    #     env_type='robo_planning',
-    #     num_env=1,
-    #     seed=0,
-    #     flatten_dict_observations=False
-    # )
-    vec_env = ColoredEgoCostmapRandomAisleTurnEnv()
-    vec_env = Monitor(vec_env,
-                  logger.get_dir() and os.path.join(logger.get_dir(), str(0) + '.' + str(0)),
-                  allow_early_resets=True)
+    vec_env = butils.make_vec_env(
+        env_id='EgoCostmapAsImgRandomTurnRoboPlanning-v0',
+        env_type='robo_planning',
+        num_env=1,
+        seed=0,
+        flatten_dict_observations=False
+    )
     # vec_env.reset()
     # vec_env.step(vec_env.action_space.sample())
 
