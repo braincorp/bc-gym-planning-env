@@ -11,8 +11,7 @@ import numpy as np
 from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
 from bc_gym_planning_env.envs.base.params import EnvParams
 from bc_gym_planning_env.envs.base.env import PlanEnv
-# from bc_gym_planning_env.envs.base import spaces
-import gym.spaces as spaces
+from bc_gym_planning_env.envs.base import spaces
 from bc_gym_planning_env.envs.base.maps import Wall
 from bc_gym_planning_env.utilities.coordinate_transformations import from_global_to_egocentric, world_to_pixel
 from bc_gym_planning_env.utilities.costmap_utils import extract_egocentric_costmap

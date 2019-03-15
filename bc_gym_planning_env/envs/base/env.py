@@ -16,8 +16,7 @@ from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint, find_l
 from bc_gym_planning_env.utilities.path_tools import refine_path
 from bc_gym_planning_env.envs.base.draw import draw_environment
 from bc_gym_planning_env.envs.base.obs import Observation
-# from bc_gym_planning_env.envs.base import spaces
-import gym.spaces as spaces
+from bc_gym_planning_env.envs.base import spaces
 from bc_gym_planning_env.envs.base.reward import ContinuousRewardProvider, generate_initial_state
 from bc_gym_planning_env.utilities.gui import OpenCVGui
 
