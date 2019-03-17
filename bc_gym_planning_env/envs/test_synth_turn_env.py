@@ -18,6 +18,9 @@ def test_colored_ego_costmap_random_aisle_turn_env():
         np.testing.assert_array_almost_equal(reward, step_snapshot['reward'])
         np.testing.assert_array_almost_equal(done, step_snapshot['done'])
 
+        if done:
+            env.reset()
+
 
 def test_colored_costmap_random_aisle_turn_env():
     with open('ground_truth_2.pkl', 'rb') as f:
@@ -31,6 +34,9 @@ def test_colored_costmap_random_aisle_turn_env():
         np.testing.assert_array_almost_equal(observation, step_snapshot['observation'])
         np.testing.assert_array_almost_equal(reward, step_snapshot['reward'])
         np.testing.assert_array_almost_equal(done, step_snapshot['done'])
+
+        if done:
+            env.reset()
 
 
 def test_random_aisle_turn_env():
