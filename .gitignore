@@ -105,3 +105,7 @@ venv.bak/
 
 # PyChamr
 .idea
+
+# Mac
+.DS_Store
+
