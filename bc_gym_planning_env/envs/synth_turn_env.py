@@ -416,7 +416,8 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         :return (array(W, H)[uint8], array(N, 3)[float]): egocentric obstacle data and a path
         """
         costmap = rich_observation.costmap
-        robot_pose = self._robot.get_pose()
+        robot_pose = self._env.get_robot().get_pose()
+        # robot_pose = self._robot.get_pose()
 
         ego_costmap = extract_egocentric_costmap(
             costmap,
