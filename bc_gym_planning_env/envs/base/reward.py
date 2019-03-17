@@ -83,7 +83,7 @@ def generate_initial_state(path, params):
     else:
         target_idx = last_reached_idx + 1
 
-    goal_pose = path[target_idx]
+    goal_pose = path[-1]
     dist_to_goal, _ = pose_distances(goal_pose, initial_pose)
 
     return ContinuousRewardProviderState(

@@ -175,12 +175,12 @@ def path_and_costmap_from_config(params):
     world_origin = min_x - margin, min_y - margin
 
     obstacles = [
-        Wall(from_pt=a, to_pt=i),
-        Wall(from_pt=c, to_pt=d),
-        Wall(from_pt=d, to_pt=e),
-        Wall(from_pt=j, to_pt=g),
-        Wall(from_pt=(a+i)/2, to_pt=g),
-        Wall(from_pt=g, to_pt=h)
+        # Wall(from_pt=a, to_pt=i),
+        # Wall(from_pt=c, to_pt=d),
+        # Wall(from_pt=d, to_pt=e),
+        # Wall(from_pt=j, to_pt=g),
+        # Wall(from_pt=(a+i)/2, to_pt=g),
+        # Wall(from_pt=g, to_pt=h)
     ]
 
     static_path = np.array([rb, rk, rl, rf])
@@ -338,8 +338,8 @@ class RandomAisleTurnEnv(gym.Env):
         # )
 
         return TurnParams(
-            main_corridor_length=10,
-            turn_corridor_length=6,
+            main_corridor_length=6,
+            turn_corridor_length=4,
             turn_corridor_angle=2. / 8. * np.pi,
             main_corridor_width=1.0,
             turn_corridor_width=1.0,
