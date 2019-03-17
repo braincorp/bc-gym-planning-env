@@ -92,7 +92,7 @@ def train_model():
         settings=OnPolicyIterationReinforcerSettings(
             discount_factor=0.99,
             batch_size=256,
-            experience_replay=1
+            experience_replay=4
         ),
         model=model,
         algo=PpoPolicyGradient(
