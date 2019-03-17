@@ -10,6 +10,7 @@ from bc_gym_planning_env.robot_models.differential_drive import \
     kinematic_body_pose_motion_step, kinematic_body_pose_motion_step_with_noise
 from bc_gym_planning_env.robot_models.robot_interface import IRobot
 from bc_gym_planning_env.robot_models.robot_drive_types import RobotDriveTypes
+from bc_gym_planning_env.utilities.coordinate_transformations import diff_angles
 from bc_gym_planning_env.utilities.map_drawing_utils import \
     get_pixel_footprint_for_drawing, get_physical_angle_from_drawing, puttext_centered
 from bc_gym_planning_env.utilities.path_tools import blit, draw_arrow, path_velocity
@@ -179,6 +180,43 @@ def tricycle_velocity_dynamic_model_step(
     new_angular_velocity = (current_w + angular_acceleration*dt)
 
     return new_linear_velocity, new_angular_velocity
+
+
+def diff_drive_control_to_tricycle(linear_vel, angular_vel, front_wheel_angle,
+                                   max_front_wheel_angle, front_wheel_from_axis_distance):
+    '''
+    Based on kinematic model:
+    linear_vel = front_wheel_linear_velocity*cos(front_wheel_angle)
+    angular_vel = front_wheel_linear_velocity*sin(front_wheel_angle)/front_wheel_from_axis_distance
+    '''
+
+    # compute desired angle of the front wheel
+    if np.abs(linear_vel) < 1e-6:
+        desired_angle = np.sign(angular_vel)*max_front_wheel_angle
+    else:
+        desired_angle = np.arctan(front_wheel_from_axis_distance*angular_vel/linear_vel)
+
+    desired_angle = np.clip(desired_angle, -max_front_wheel_angle, max_front_wheel_angle)
+
+    # invert kinematic model to compute lin velocity of the front wheel.
+    # There two estimates will be consistent when the wheel turns to the desired angle
+    # however while its turning, we need to pick some value
+    # front_wheel_linear_velocity = linear_vel/cos(front_wheel_angle)
+    # front_wheel_linear_velocity = angular_vel*front_wheel_from_axis_distance/sin(front_wheel_angle)
+    wheel_sin = np.sin(front_wheel_angle)
+    wheel_cos = np.cos(front_wheel_angle)
+
+    # we want the center of mass to move with v and rotate with w.
+    # It means we move front wheel center move with v + [w, d].
+    # Wheel is nonholonomic, so to get wheel linear velocity we project (v + [w, d]) on wheel direction:
+    front_wheel_linear_velocity = linear_vel*wheel_cos + angular_vel*front_wheel_from_axis_distance*wheel_sin
+    front_wheel_linear_velocity = max(front_wheel_linear_velocity, 0.)
+
+    # however if we want to rotate in place, we do not apply linear velocity if the angle is not close to the desired
+    if np.abs(linear_vel) < 1e-6 and np.abs(diff_angles(front_wheel_angle, desired_angle)) > np.pi/8:
+        front_wheel_linear_velocity = 0.
+
+    return front_wheel_linear_velocity, desired_angle
 
 
 @attr.s
