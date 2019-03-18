@@ -48,6 +48,7 @@ from bc_gym_planning_env.envs.base.action import Action
 
 from vel.openai.baselines import logger
 from vel.openai.baselines.bench import Monitor
+from vel.openai.baselines.common.vec_env.dummy_vec_env import DummyVecEnv
 
 
 def train_model():
@@ -56,13 +57,8 @@ def train_model():
 
     # Set random seed in python std lib, numpy and pytorch
     set_seed(seed)
-    vec_env = butils.make_vec_env(
-        env_id='EgoCostmapAsImgRandomTurnRoboPlanning-v0',
-        env_type='robo_planning',
-        num_env=1,
-        seed=0,
-        flatten_dict_observations=False
-    )
+    env_function = lambda: ColoredEgoCostmapRandomAisleTurnEnv()
+    vec_env = DummyVecEnv([env_function])
     # vec_env.reset()
     # vec_env.step(vec_env.action_space.sample())
 

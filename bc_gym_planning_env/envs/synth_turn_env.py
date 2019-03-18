@@ -16,7 +16,6 @@ from bc_gym_planning_env.envs.base.maps import Wall
 from bc_gym_planning_env.utilities.coordinate_transformations import from_global_to_egocentric, world_to_pixel
 from bc_gym_planning_env.utilities.costmap_utils import extract_egocentric_costmap
 from gym.envs.registration import register
-import gym
 from bc_gym_planning_env.utilities.map_drawing_utils import get_pixel_footprint_for_drawing, get_physical_angle_from_drawing
 from bc_gym_planning_env.utilities.path_tools import blit, refine_path
 
@@ -220,7 +219,7 @@ class AisleTurnEnv(PlanEnv):
         return self._robot
 
 
-class RandomAisleTurnEnv(gym.Env):
+class RandomAisleTurnEnv(object):
     """
     AisleTurnEnv where the turn geometry is drawn randomly
     over and over again.
