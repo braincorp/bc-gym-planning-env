@@ -213,7 +213,7 @@ class AisleTurnEnv(PlanEnv):
         Get the robot.
         :return IRobot: robot that is part of this environment
         """
-        return self._robot
+        return self._env.get_robot()
 
 
 class RandomAisleTurnEnv(object):
@@ -246,7 +246,6 @@ class RandomAisleTurnEnv(object):
         self._env_params = params
         self.config = AisleTurnEnvParams(turn_params=turn_params, env_params=self._env_params)
         self._env = AisleTurnEnv(self.config)
-        self._robot = self._env.get_robot()
 
         self.action_space = self._env.action_space
         # self.observation_space = self._env.observation_space
@@ -401,7 +400,6 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         """
         costmap = rich_observation.costmap
         robot_pose = self._env.get_robot().get_pose()
-        # robot_pose = self._robot.get_pose()
 
         ego_costmap = extract_egocentric_costmap(
             costmap,
