@@ -221,7 +221,7 @@ class AisleTurnEnv(PlanEnv):
         return self._robot
 
 
-class RandomAisleTurnEnv(gym.Env):
+class RandomAisleTurnEnv(object):
     """
     AisleTurnEnv where the turn geometry is drawn randomly
     over and over again.
@@ -475,19 +475,3 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         obs = self._extract_egocentric_observation(rich_obs)
         return obs
 
-
-register(
-    id='RandomTurnRoboPlanning-v0',
-    entry_point='bc_gym_planning_env.envs.synth_turn_env:RandomAisleTurnEnv',
-    kwargs=dict(seed=1)
-)
-
-register(
-    id='CostmapAsImgRandomTurnRoboPlanning-v0',
-    entry_point='bc_gym_planning_env.envs.synth_turn_env:ColoredCostmapRandomAisleTurnEnv'
-)
-
-register(
-    id='EgoCostmapAsImgRandomTurnRoboPlanning-v0',
-    entry_point='bc_gym_planning_env.envs.synth_turn_env:ColoredEgoCostmapRandomAisleTurnEnv'
-)
