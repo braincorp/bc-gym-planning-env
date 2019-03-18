@@ -343,9 +343,9 @@ class RandomAisleTurnEnv(gym.Env):
             turn_corridor_angle=self._rng.uniform(-0./8. * np.pi, 3./8.*np.pi),
             main_corridor_width=self._rng.uniform(1.0, 1.5),
             turn_corridor_width=self._rng.uniform(1.0, 1.5),
-            flip_arnd_oy=False,
-            flip_arnd_ox=False,
-            rot_theta=0.0
+            flip_arnd_oy=bool(self._rng.rand() < 0.5),
+            flip_arnd_ox=bool(self._rng.rand() < 0.5),
+            rot_theta=self._rng.uniform(0, 2*np.pi)
         )
 
 
