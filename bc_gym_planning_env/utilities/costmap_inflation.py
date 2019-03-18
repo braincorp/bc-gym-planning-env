@@ -6,6 +6,7 @@ import numpy as np
 import cv2
 
 from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
+from bc_gym_planning_env.utilities.map_drawing_utils import draw_world_map
 from bc_gym_planning_env.utilities.path_tools import circumscribed_radius, inscribed_radius
 
 from bc_gym_planning_env.utilities.opencv_utils import single_threaded_opencv
@@ -90,3 +91,15 @@ def inflate_costmap(costmap, cost_scaling_factor, footprint):
         origin=costmap.get_origin(),
         resolution=costmap.get_resolution()
     )
+
+
+def draw_world_map_with_inflation(img, costmap_data):
+    '''
+    Draws obstacles, unknowns and inflated regions
+    :param img array(W, H, 3)[uint8]: canvas to draw on
+    :param costmap_data(W, H)[uint8]: costmap data
+    '''
+    draw_world_map(img, costmap_data)
+    # flip image to show it in physical orientation
+    costmap = np.flipud(costmap_data)
+    img[costmap == INSCRIBED_INFLATED_OBSTACLE] = (220, 220, 150)
