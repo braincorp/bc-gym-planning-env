@@ -15,10 +15,6 @@ from bc_gym_planning_env.envs.base import spaces
 from bc_gym_planning_env.envs.base.maps import Wall
 from bc_gym_planning_env.utilities.coordinate_transformations import from_global_to_egocentric, world_to_pixel
 from bc_gym_planning_env.utilities.costmap_utils import extract_egocentric_costmap
-from gym.envs.registration import register
-import gym
-from bc_gym_planning_env.utilities.map_drawing_utils import get_pixel_footprint_for_drawing, get_physical_angle_from_drawing
-from bc_gym_planning_env.utilities.path_tools import blit, refine_path
 
 
 @attr.s
@@ -326,26 +322,15 @@ class RandomAisleTurnEnv(object):
 
         :return TurnParams: Random turn params
         """
-        # return TurnParams(
-        #     main_corridor_length=self._rng.uniform(10, 16),
-        #     turn_corridor_length=self._rng.uniform(4, 12),
-        #     turn_corridor_angle=self._rng.uniform(-3./8. * np.pi, 3./8.*np.pi),
-        #     main_corridor_width=self._rng.uniform(0.5, 1.5),
-        #     turn_corridor_width=self._rng.uniform(0.5, 1.5),
-        #     flip_arnd_oy=bool(self._rng.rand() < 0.5),
-        #     flip_arnd_ox=bool(self._rng.rand() < 0.5),
-        #     rot_theta=self._rng.uniform(0, 2*np.pi)
-        # )
-
         return TurnParams(
-            main_corridor_length=10,
-            turn_corridor_length=6,
-            turn_corridor_angle=2. / 8. * np.pi,
-            main_corridor_width=1.0,
-            turn_corridor_width=1.0,
-            flip_arnd_oy=False,
-            flip_arnd_ox=False,
-            rot_theta=0.0
+            main_corridor_length=self._rng.uniform(10, 16),
+            turn_corridor_length=self._rng.uniform(4, 12),
+            turn_corridor_angle=self._rng.uniform(-3./8. * np.pi, 3./8.*np.pi),
+            main_corridor_width=self._rng.uniform(0.5, 1.5),
+            turn_corridor_width=self._rng.uniform(0.5, 1.5),
+            flip_arnd_oy=bool(self._rng.rand() < 0.5),
+            flip_arnd_ox=bool(self._rng.rand() < 0.5),
+            rot_theta=self._rng.uniform(0, 2*np.pi)
         )
 
 
@@ -426,21 +411,10 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
             resulting_size=(self._egomap_x_bounds[1] - self._egomap_x_bounds[0],
                             self._egomap_y_bounds[1] - self._egomap_y_bounds[0]))
 
-        px = int((0. - self._egomap_x_bounds[0]) / costmap.get_resolution())
-        py = int((0. - self._egomap_y_bounds[0]) / costmap.get_resolution())
-        angle = 0.
-        color = 100
-        map_resolution = costmap.get_resolution()
-        footprint = self._robot.get_footprint()
-        image = ego_costmap.get_data()
-        kernel = get_pixel_footprint_for_drawing(get_physical_angle_from_drawing(angle), footprint, map_resolution)
-        blit(kernel, image, px, py, color)
-
         ego_path = from_global_to_egocentric(rich_observation.path, robot_pose)
         obs = np.expand_dims(ego_costmap.get_data(), -1)
         normalized_goal = ego_path[-1, :2] / ego_costmap.world_size()
         normalized_goal = normalized_goal / np.linalg.norm(normalized_goal)
-        # normalized_goal = np.clip(normalized_goal, (-1., -1.), (1., 1.))
         return OrderedDict((('environment', obs),
                             ('goal', np.expand_dims(normalized_goal, -1))))
 
