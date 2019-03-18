@@ -133,8 +133,8 @@ class PlanEnv(object):
 
         # Properties, things without state
         self.action_space = spaces.Box(
-            low=np.array([-np.pi/3]),
-            high=np.array([np.pi/3]),
+            low=np.array([-self._robot.get_max_front_wheel_speed() / 2, -np.pi / 2]),
+            high=np.array([self._robot.get_max_front_wheel_speed(), np.pi / 2]),
             dtype=np.float32)
         self.reward_range = (0.0, 1.0)
         self._gui = OpenCVGui()
@@ -285,7 +285,7 @@ class PlanEnv(object):
         we have timed out or the robot has collided.
         :return bool: are we done with this planning environment?
         """
-        goal_reached = self._reward_provider.done(self._state)
+        goal_reached = self._reward_provider.done()
         timed_out = self._has_timed_out()
         done = goal_reached or timed_out or self._state.robot_collided
 
@@ -349,7 +349,6 @@ def _env_step(costmap, robot, dt, control_signals):
     :param control_signals: motion primitives to executed
     :return bool: Does it collide?
     """
-    control_signals.command = np.array([0.2, control_signals.command[0]])
     old_position = robot.get_pose()
     robot.step(dt, control_signals)
     new_position = robot.get_pose()
