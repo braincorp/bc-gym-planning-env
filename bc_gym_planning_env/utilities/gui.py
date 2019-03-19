@@ -19,6 +19,7 @@ class OpenCVGui(object):
         """
         Displau an image with Opencv. Prepare windows depending on the os
         :param image: numpy array with a BGR image
+        :return np.array: numpy array with a BGR image
         """
         if self._window_name is None:
             self._window_name = "environment"
@@ -30,6 +31,7 @@ class OpenCVGui(object):
 
         cv2.imshow(self._window_name, image)
         cv2.waitKey(1)
+        return image
 
     def close(self):
         """Close possibly created window"""

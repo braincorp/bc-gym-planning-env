@@ -246,7 +246,6 @@ class RandomAisleTurnEnv(object):
         self._env_params = params
         self.config = AisleTurnEnvParams(turn_params=turn_params, env_params=self._env_params)
         self._env = AisleTurnEnv(self.config)
-        self._robot = self._env.get_robot()
 
         self.action_space = self._env.action_space
         # self.observation_space = self._env.observation_space
@@ -387,7 +386,7 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         resulting_size = (self._egomap_x_bounds[1] - self._egomap_x_bounds[0],
                           self._egomap_y_bounds[1] - self._egomap_y_bounds[0])
 
-        pixel_size = world_to_pixel(resulting_size, np.zeros((2,)), resolution=0.03)
+        pixel_size = world_to_pixel(np.asarray(resulting_size, dtype=np.float64), np.zeros((2,)), resolution=0.03)
         data_shape = (pixel_size[1], pixel_size[0], 1)
         self.observation_space = spaces.Dict(OrderedDict((
             ('environment', spaces.Box(low=0, high=255, shape=data_shape, dtype=np.uint8)),
@@ -400,7 +399,7 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         :return (array(W, H)[uint8], array(N, 3)[float]): egocentric obstacle data and a path
         """
         costmap = rich_observation.costmap
-        robot_pose = self._robot.get_pose()
+        robot_pose = self._env.get_robot().get_pose()
 
         ego_costmap = extract_egocentric_costmap(
             costmap,
@@ -412,7 +411,7 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         ego_path = from_global_to_egocentric(rich_observation.path, robot_pose)
         obs = np.expand_dims(ego_costmap.get_data(), -1)
         normalized_goal = ego_path[-1, :2] / ego_costmap.world_size()
-        normalized_goal = np.clip(normalized_goal, (-1., -1.), (1., 1.))
+        normalized_goal = normalized_goal / np.linalg.norm(normalized_goal)
         return OrderedDict((('environment', obs),
                             ('goal', np.expand_dims(normalized_goal, -1))))
 
