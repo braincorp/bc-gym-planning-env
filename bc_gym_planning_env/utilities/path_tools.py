@@ -554,7 +554,7 @@ def compute_robot_area(resolution, robot_footprint):
     """
     Computes robot footprint area in pixels
     :param resolution float: resolution of the costmap
-    :param footprint array(N, 2)[float]: footprint polygon
+    :param robot_footprint array(N, 2)[float]: footprint polygon
     :return float: area of robot's footprint in pixels
     """
     return float(np.count_nonzero(get_pixel_footprint(0., robot_footprint, resolution)))

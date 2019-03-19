@@ -21,7 +21,7 @@ def distance_transform(img):
     (Calculates the distance to the closest zero pixel for each pixel of the source image.)
     if walls are marked with 0, it will compute distance to the closes wall for each pixel.
     This function computes L2 precise distance (the most common usecase)
-    :param np.array(W, H)[uint8] img: source image
+    :param img np.array(W, H)[uint8]: source image
     :return np.array(W, H)[float]: image with distances to 0 pixels
     '''
     with single_threaded_opencv():
