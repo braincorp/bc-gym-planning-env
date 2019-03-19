@@ -30,7 +30,6 @@ class OpenCVGui(object):
 
         cv2.imshow(self._window_name, image)
         cv2.waitKey(1)
-        return image
 
     def close(self):
         """Close possibly created window"""
