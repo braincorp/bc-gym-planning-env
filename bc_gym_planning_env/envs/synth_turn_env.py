@@ -213,7 +213,7 @@ class AisleTurnEnv(PlanEnv):
         Get the robot.
         :return IRobot: robot that is part of this environment
         """
-        return self._env.get_robot()
+        return self._robot
 
 
 class RandomAisleTurnEnv(object):
