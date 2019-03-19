@@ -111,7 +111,7 @@ def make_initial_state(path, costmap, robot, params):
         current_iter=0,
         robot_collided=False,
         pose=initial_pose,
-        poses_queue=[initial_pose],
+        poses_queue=[],
         robot_state=robot_state,
         robot_state_queue=[robot_state],
         control_queue=[],
