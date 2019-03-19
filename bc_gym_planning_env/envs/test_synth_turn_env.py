@@ -1,8 +1,13 @@
-from bc_gym_planning_env.envs.synth_turn_env import ColoredEgoCostmapRandomAisleTurnEnv,\
-    ColoredCostmapRandomAisleTurnEnv
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
+
 import pickle
 import numpy as np
 import pytest
+
+from bc_gym_planning_env.envs.synth_turn_env import ColoredEgoCostmapRandomAisleTurnEnv,\
+    ColoredCostmapRandomAisleTurnEnv
 
 
 @pytest.mark.skipif(True, reason="waiting for after serialization to merge first")
