@@ -249,8 +249,6 @@ class RandomAisleTurnEnv(object):
         self._env_params = params
         self.config = AisleTurnEnvParams(turn_params=turn_params, env_params=self._env_params)
         self._env = AisleTurnEnv(self.config)
-        self._robot = self._env.get_robot()
-
         self.action_space = self._env.action_space
         # self.observation_space = self._env.observation_space
 
@@ -415,7 +413,6 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         """
         costmap = rich_observation.costmap
         robot_pose = self._env.get_robot().get_pose()
-        # robot_pose = self._robot.get_pose()
 
         ego_costmap = extract_egocentric_costmap(
             costmap,
@@ -429,7 +426,7 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         angle = 0.
         color = 100
         map_resolution = costmap.get_resolution()
-        footprint = self._robot.get_footprint()
+        footprint = self._env.get_robot().get_footprint()
         image = ego_costmap.get_data()
         kernel = get_pixel_footprint_for_drawing(get_physical_angle_from_drawing(angle), footprint, map_resolution)
         blit(kernel, image, px, py, color)
@@ -438,7 +435,6 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         obs = np.expand_dims(ego_costmap.get_data(), -1)
         normalized_goal = ego_path[-1, :2] / ego_costmap.world_size()
         normalized_goal = normalized_goal / np.linalg.norm(normalized_goal)
-        # normalized_goal = np.clip(normalized_goal, (-1., -1.), (1., 1.))
         return OrderedDict((('environment', obs),
                             ('goal', np.expand_dims(normalized_goal, -1))))
 
@@ -472,20 +468,3 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         rich_obs = super(ColoredEgoCostmapRandomAisleTurnEnv, self).reset()
         obs = self._extract_egocentric_observation(rich_obs)
         return obs
-
-
-register(
-    id='RandomTurnRoboPlanning-v0',
-    entry_point='bc_gym_planning_env.envs.synth_turn_env:RandomAisleTurnEnv',
-    kwargs=dict(seed=1)
-)
-
-register(
-    id='CostmapAsImgRandomTurnRoboPlanning-v0',
-    entry_point='bc_gym_planning_env.envs.synth_turn_env:ColoredCostmapRandomAisleTurnEnv'
-)
-
-register(
-    id='EgoCostmapAsImgRandomTurnRoboPlanning-v0',
-    entry_point='bc_gym_planning_env.envs.synth_turn_env:ColoredEgoCostmapRandomAisleTurnEnv'
-)
