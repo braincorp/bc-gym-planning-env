@@ -176,13 +176,17 @@ def in_costmap_bounds(data, map_x, map_y):
 
 
 def pose_collides(pose, footprint, costmap_data, origin, resolution):
-    '''
+    """
     Check if robot footprint at x, y (world coordinates) and
         oriented as yaw collides with lethal obstacles.
-    '''
-    kernel_image = get_pixel_footprint(pose[2],
-                                       footprint,
-                                       resolution)
+    :param pose array(3)[float]: (x, y, angle) of the robot
+    :param footprint array(N, 2)[float]: footprint polygon
+    :param costmap_data array(W, H)[uint8]: costmap data with obstacles
+    :param origin array(2)[float]: (x, y) origin of the costmap
+    :param resolution float: resolution of the costmap
+    :return bool: whether the robot collides or not
+    """
+    kernel_image = get_pixel_footprint(pose[2], footprint, resolution)
     # Get the coordinates of where the footprint is inside the kernel_image (on pixel coordinates)
     kernel = np.where(kernel_image)
     # Move footprint to (x,y), all in pixel coordinates

@@ -1,3 +1,4 @@
+"""Utilities to perform costmap inflation"""
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
@@ -29,11 +30,12 @@ def distance_transform(img):
 
 def compute_cost_possibly_circumscribed_thresh(footprint, resolution, cost_scaling_factor):
     '''
-    compute costs of possibly circumscribed radius needed for some planners (e.g. sbpl)
+    Compute costs of possibly circumscribed radius needed for some planners (e.g. sbpl)
     :param footprint: n x 2 numpy array with ROS-style footprint (x, y coordinates)
     :param resolution: costmap resolution
     :param cost_scaling_factor: 1 over the distance (in world units) at which costs
             beyond the inscribed radius decay by a factor of e.
+    :return float: cost of possibly circumscribed radius
     '''
     distance = circumscribed_radius(footprint)
     inscribed_rad = inscribed_radius(footprint)
@@ -43,14 +45,14 @@ def compute_cost_possibly_circumscribed_thresh(footprint, resolution, cost_scali
 
 
 def _pixel_distance_to_cost(distance, resolution, inscribed_rad, cost_scaling_factor):
-    '''
+    """
     Transform a matrix or value of distance to obstacles (in pixels) into a matrix or value of costs
-    '''
-    if isinstance(distance, (float, int)):  # this isn't necessary with numpy 1.9.2
-        distance = np.array([distance])
-        scalar = True
-    else:
-        scalar = False
+    :param distance array(W, H)[float]: matrix of distances for each pixel
+    :param resolution float: resolution of the costmap
+    :param inscribed_rad float: inscribed radius of the robot
+    :param cost_scaling_factor float: a scalar to scale the cost field
+    :return array(W, H)[uint8]: image with costs (254 is a lethal cost and 0 is free space)
+    """
     pixel_inscribed_radius = inscribed_rad / resolution
     pixel_scaling_factor = cost_scaling_factor * resolution
 
@@ -65,10 +67,7 @@ def _pixel_distance_to_cost(distance, resolution, inscribed_rad, cost_scaling_fa
     costs[other] = (inscribed_cost - 1) * np.exp(-pixel_scaling_factor * (distance[other] - pixel_inscribed_radius))
     costs[inscribed] = inscribed_cost
     costs[lethal] = lethal_cost
-    if scalar:
-        return costs[0]
-    else:
-        return costs
+    return costs
 
 
 def inflate_costmap(costmap, cost_scaling_factor, footprint):

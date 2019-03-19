@@ -184,12 +184,18 @@ def tricycle_velocity_dynamic_model_step(
 
 def diff_drive_control_to_tricycle(linear_vel, angular_vel, front_wheel_angle,
                                    max_front_wheel_angle, front_wheel_from_axis_distance):
-    '''
+    """
+    Generate tricycle control commands from desired diffdrive behavior (makes tricycle approximate diffdrive)
     Based on kinematic model:
     linear_vel = front_wheel_linear_velocity*cos(front_wheel_angle)
     angular_vel = front_wheel_linear_velocity*sin(front_wheel_angle)/front_wheel_from_axis_distance
-    '''
-
+    :param linear_vel float: desired linear velocity
+    :param angular_vel float: desired angular velocity
+    :param front_wheel_angle float: current wheel angle
+    :param max_front_wheel_angle float: maximum front wheel angle
+    :param front_wheel_from_axis_distance float: distance from the front wheel to the back axis of the robot
+    :return (float, float): desired front wheel velocity and steering angle of the tricycle
+    """
     # compute desired angle of the front wheel
     if np.abs(linear_vel) < 1e-6:
         desired_angle = np.sign(angular_vel)*max_front_wheel_angle
