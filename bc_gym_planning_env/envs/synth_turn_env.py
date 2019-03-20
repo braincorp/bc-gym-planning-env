@@ -15,7 +15,6 @@ from bc_gym_planning_env.envs.base import spaces
 from bc_gym_planning_env.envs.base.maps import Wall
 from bc_gym_planning_env.utilities.coordinate_transformations import from_global_to_egocentric, world_to_pixel
 from bc_gym_planning_env.utilities.costmap_utils import extract_egocentric_costmap
-from gym.envs.registration import register
 from bc_gym_planning_env.utilities.map_drawing_utils import get_pixel_footprint_for_drawing, get_physical_angle_from_drawing
 from bc_gym_planning_env.utilities.path_tools import blit, refine_path
 
@@ -174,12 +173,12 @@ def path_and_costmap_from_config(params):
     world_origin = min_x - margin, min_y - margin
 
     obstacles = [
-        # Wall(from_pt=a, to_pt=i),
-        # Wall(from_pt=c, to_pt=d),
-        # Wall(from_pt=d, to_pt=e),
-        # Wall(from_pt=j, to_pt=g),
-        # Wall(from_pt=(a+i)/2, to_pt=g),
-        # Wall(from_pt=g, to_pt=h)
+        Wall(from_pt=a, to_pt=i),
+        Wall(from_pt=c, to_pt=d),
+        Wall(from_pt=d, to_pt=e),
+        Wall(from_pt=j, to_pt=g),
+        Wall(from_pt=(a+i)/2, to_pt=g),
+        Wall(from_pt=g, to_pt=h)
     ]
 
     static_path = np.array([rb, rk, rl, rf])
@@ -250,6 +249,7 @@ class RandomAisleTurnEnv(object):
         self._env_params = params
         self.config = AisleTurnEnvParams(turn_params=turn_params, env_params=self._env_params)
         self._env = AisleTurnEnv(self.config)
+
         self.action_space = self._env.action_space
         # self.observation_space = self._env.observation_space
 

@@ -8,7 +8,7 @@ import cv2
 
 from bc_gym_planning_env.utilities.path_tools import blit, get_blit_values, ensure_float_numpy, orient_path, \
     path_velocity, pose_distances, distance_to_segments, distances_to_segment, distances_to_multiple_segments, \
-    inscribed_radius, circumscribed_radius, get_pixel_footprint
+    inscribed_radius, circumscribed_radius, get_pixel_footprint, compute_robot_area
 
 
 def _tricycle_footprint():
@@ -460,6 +460,12 @@ def test_get_pixel_footprint_consistency():
                     pixel_footprint = get_pixel_footprint(angle, f, resolution, fill=fill)
                     reference = get_pixel_footprint_py(angle, f, resolution, fill=fill)
                     np.testing.assert_array_equal(pixel_footprint, reference)
+
+
+def test_compute_robot_area():
+    footprint = np.array([[-0.77, -0.385], [-0.77, 0.385], [0.67, 0.385], [0.67, -0.385]])
+    area = compute_robot_area(0.05, footprint)
+    assert area == 493.0
 
 
 if __name__ == '__main__':

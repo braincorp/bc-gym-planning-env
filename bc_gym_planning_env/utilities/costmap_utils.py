@@ -173,3 +173,31 @@ def in_costmap_bounds(data, map_x, map_y):
     :return bool: whether a pixel at (map_x, map_y) is inside the costmap area
     """
     return not (map_x < 0 or map_y < 0 or map_x >= data.shape[1] or map_y >= data.shape[0])
+
+
+def pose_collides(pose, footprint, costmap_data, origin, resolution):
+    """
+    Check if robot footprint at x, y (world coordinates) and
+        oriented as yaw collides with lethal obstacles.
+    :param pose array(3)[float]: (x, y, angle) of the robot
+    :param footprint array(N, 2)[float]: footprint polygon
+    :param costmap_data array(W, H)[uint8]: costmap data with obstacles
+    :param origin array(2)[float]: (x, y) origin of the costmap
+    :param resolution float: resolution of the costmap
+    :return bool: whether the robot collides or not
+    """
+    kernel_image = get_pixel_footprint(pose[2], footprint, resolution)
+    # Get the coordinates of where the footprint is inside the kernel_image (on pixel coordinates)
+    kernel = np.where(kernel_image)
+    # Move footprint to (x,y), all in pixel coordinates
+    x, y = world_to_pixel(pose[:2], origin, resolution)
+    collisions = y + kernel[0] - kernel_image.shape[0] // 2, x + kernel[1] - kernel_image.shape[1] // 2
+
+    # Check if the footprint pixel coordinates are valid, this is, if they are not negative and are inside the map
+    good = np.logical_and(np.logical_and(collisions[0] >= 0, collisions[0] < costmap_data.shape[0]),
+                          np.logical_and(collisions[1] >= 0, collisions[1] < costmap_data.shape[1]))
+
+    # Just from the footprint coordinates that are good, check if they collide
+    # with obstacles inside the map
+    return bool(np.any(costmap_data[collisions[0][good],
+                                    collisions[1][good]] == CostMap2D.LETHAL_OBSTACLE))

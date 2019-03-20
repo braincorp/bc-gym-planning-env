@@ -548,3 +548,13 @@ def get_pixel_in_map_mask(map_shape, pixels):
     """
     ixs = (pixels[:, 1] >= 0) & (pixels[:, 1] < map_shape[0]) & (pixels[:, 0] >= 0) & (pixels[:, 0] < map_shape[1])
     return ixs
+
+
+def compute_robot_area(resolution, robot_footprint):
+    """
+    Computes robot footprint area in pixels
+    :param resolution float: resolution of the costmap
+    :param robot_footprint array(N, 2)[float]: footprint polygon
+    :return float: area of robot's footprint in pixels
+    """
+    return float(np.count_nonzero(get_pixel_footprint(0., robot_footprint, resolution)))
