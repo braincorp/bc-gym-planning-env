@@ -419,15 +419,15 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
             resulting_size=(self._egomap_x_bounds[1] - self._egomap_x_bounds[0],
                             self._egomap_y_bounds[1] - self._egomap_y_bounds[0]))
 
-        px = int((0. - self._egomap_x_bounds[0]) / costmap.get_resolution())
-        py = int((0. - self._egomap_y_bounds[0]) / costmap.get_resolution())
-        angle = 0.
-        color = 100
-        map_resolution = costmap.get_resolution()
-        footprint = self._env.get_robot().get_footprint()
-        image = ego_costmap.get_data()
-        kernel = get_pixel_footprint_for_drawing(get_physical_angle_from_drawing(angle), footprint, map_resolution)
-        blit(kernel, image, px, py, color)
+        # px = int((0. - self._egomap_x_bounds[0]) / costmap.get_resolution())
+        # py = int((0. - self._egomap_y_bounds[0]) / costmap.get_resolution())
+        # angle = 0.
+        # color = 100
+        # map_resolution = costmap.get_resolution()
+        # footprint = self._env.get_robot().get_footprint()
+        # image = ego_costmap.get_data()
+        # kernel = get_pixel_footprint_for_drawing(get_physical_angle_from_drawing(angle), footprint, map_resolution)
+        # blit(kernel, image, px, py, color)
 
         ego_path = from_global_to_egocentric(rich_observation.path, robot_pose)
         obs = np.expand_dims(ego_costmap.get_data(), -1)
