@@ -132,11 +132,22 @@ class PlanEnv(object):
         self._reward_provider = ContinuousRewardProvider(params=params.reward_provider_params)
 
         # Properties, things without state
-        # self.action_space = spaces.Discrete(11)
-        self.action_space = spaces.Box(
-            low=np.array([-np.pi/3]),
-            high=np.array([np.pi/3]),
-            dtype=np.float32)
+        self.action_space = spaces.Discrete(11)
+        self._command_dict = {0: [0.2, 0.0],
+                              1: [0.2, 0.3],
+                              2: [0.2, -0.3],
+                              3: [0.2, 0.5],
+                              4: [0.2, -0.5],
+                              5: [0.2, 0.7],
+                              6: [0.2, -0.7],
+                              7: [0.2, 1.1],
+                              8: [0.2, -1.1],
+                              9: [0.2, 1.3],
+                              10: [0.2, -1.3]}
+        # self.action_space = spaces.Box(
+        #     low=np.array([-np.pi/3]),
+        #     high=np.array([np.pi/3]),
+        #     dtype=np.float32)
         self.reward_range = (0.0, 1.0)
         self._gui = OpenCVGui()
         self._params = params
@@ -247,12 +258,12 @@ class PlanEnv(object):
             state.control_queue, action, self._params.control_delay
         )
 
-        collided = _env_step(self._state.costmap, self._robot, self._params.dt, delayed_action)
+        collided = self._env_step(self._state.costmap, self._robot, self._params.dt, delayed_action)
 
         pose = self._robot.get_pose()
-        delayed_pose = pose    #get_element_from_list_with_delay(
-            # state.poses_queue, pose, self._params.pose_delay
-        # )
+        delayed_pose = _get_element_from_list_with_delay(
+            state.poses_queue, pose, self._params.pose_delay
+        )
 
         current_time = state.current_time + self._params.dt
         current_iter = state.current_iter + 1
@@ -312,6 +323,28 @@ class PlanEnv(object):
         :return Dict: empty dict (for now) """
         return {}
 
+    def _env_step(self, costmap, robot, dt, control_signals):
+        """
+        Execute movement step for the robot.
+        :param costmap Costmap2D: costmap containing the obstacles to potentially collide with
+        :param robot: Robot that will execute the movement based on its model
+        :param dt: time interval between time steps
+        :param control_signals: motion primitives to executed
+        :return bool: Does it collide?
+        """
+        control_signals.command = self._command_dict[int(control_signals.command)]
+        # control_signals.command = np.array([0.2, control_signals.command[0]])
+        old_position = robot.get_pose()
+        robot.step(dt, control_signals)
+        new_position = robot.get_pose()
+
+        x, y, angle = new_position
+        collides = _pose_collides(x, y, angle, robot, costmap)
+        if collides:
+            robot.set_pose(*old_position)
+
+        return collides
+
 
 def _randomize(reward_params, random_param, robot, costmap, path):
     """
@@ -339,40 +372,6 @@ def _randomize(reward_params, random_param, robot, costmap, path):
     # TODO: Other randomization
 
     return randomized_path
-
-
-def _env_step(costmap, robot, dt, control_signals):
-    """
-    Execute movement step for the robot.
-    :param costmap Costmap2D: costmap containing the obstacles to potentially collide with
-    :param robot: Robot that will execute the movement based on its model
-    :param dt: time interval between time steps
-    :param control_signals: motion primitives to executed
-    :return bool: Does it collide?
-    """
-    # command_dict = {0: [0.2, 0.0],
-    #                 1: [0.2, 0.3],
-    #                 2: [0.2, -0.3],
-    #                 3: [0.2, 0.5],
-    #                 4: [0.2, -0.5],
-    #                 5: [0.2, 0.7],
-    #                 6: [0.2, -0.7],
-    #                 7: [0.2, 1.1],
-    #                 8: [0.2, -1.1],
-    #                 9: [0.2, 1.3],
-    #                 10: [0.2, -1.3]}
-    # control_signals.command = command_dict[int(control_signals.command)]
-    control_signals.command = np.array([0.2, control_signals.command[0]])
-    old_position = robot.get_pose()
-    robot.step(dt, control_signals)
-    new_position = robot.get_pose()
-
-    x, y, angle = new_position
-    collides = _pose_collides(x, y, angle, robot, costmap)
-    if collides:
-        robot.set_pose(*old_position)
-
-    return collides
 
 
 def _pose_collides(x, y, angle, robot, costmap):
