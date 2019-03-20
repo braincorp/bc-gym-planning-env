@@ -87,7 +87,6 @@ class ContinuousRewardPurePursuitProviderState(object):
         goal_reached = spat_near and ang_near
 
         return goal_reached
-        # return self.target_idx > len(self.path) - 1
 
 
 @attr.s
