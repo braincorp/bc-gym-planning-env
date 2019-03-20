@@ -45,6 +45,52 @@ class ContinuousRewardProviderState(object):
 
 
 @attr.s
+class ContinuousRewardPurePursuitProviderState(object):
+    """ State of the continuous reward provider: """
+    # How much progress has the agent done towards current goal pose
+    min_spat_dist_so_far = attr.ib(type=float)
+    # Full static path to follow
+    path = attr.ib(type=np.ndarray)
+    # idx of current goal pose along the static path
+    target_idx = attr.ib(type=int)
+
+    def copy(self):
+        """ Get a copy of the reward provider's state
+        :return ContinuousRewardProviderState: the copy of ourselves
+        """
+        return attr.evolve(self, path=np.copy(self.path))
+
+    def current_goal_pose(self):
+        """ Get the current goal pose
+        :return np.ndarray(3): The current goal pose
+        """
+        return self.path[-1]
+        # if self.target_idx < len(self.path):
+        #     return self.path[self.target_idx]
+        # else:
+        #     raise ValueError("No path left to follow.")
+
+    def current_path(self):
+        """ Get the current path
+        :return np.ndarray(N, 3): the piece of static path left to follow
+        """
+        return self.path
+
+    def done(self, state):
+        """ Are we done?
+        :return bool: True if we are done with this environment. """
+        robot_pose = state.pose
+        spat_dist, ang_dist = pose_distances(self.current_goal_pose(), robot_pose)
+        spat_near = spat_dist < 1.0
+        # ang_near = ang_dist < self._params.goal_ang_dist
+        ang_near = True  # ang_dist < self._params.goal_ang_dist
+        goal_reached = spat_near and ang_near
+
+        return goal_reached
+        # return self.target_idx > len(self.path) - 1
+
+
+@attr.s
 class RewardParams(object):
     """ Parametrization of the continuous reward provider"""
     # How close spatially do you have to be to count the goal as reached
@@ -77,7 +123,7 @@ def generate_initial_state(path, params):
     goal_pose = path[-1]
     dist_to_goal, _ = pose_distances(goal_pose, initial_pose)
 
-    return ContinuousRewardProviderState(
+    return ContinuousRewardPurePursuitProviderState(
         min_spat_dist_so_far=dist_to_goal,
         path=path,
         target_idx=target_idx
@@ -169,3 +215,64 @@ class ContinuousRewardProvider(object):
             else:
                 # We didn't do any progress
                 return 0.0
+
+
+@attr.s
+class ContinuousRewardPurePursuitProvider(object):
+    """ An object resolving whether the agent should get reward.
+    Gives reward of 1.0 when we reach any waypoint.
+    If we reach any waypoint, our goal is the next waypoint.
+     """
+    _params = attr.ib(type=RewardParams)
+    _state = attr.ib(type=ContinuousRewardPurePursuitProviderState, default=None)
+    _initial_state = attr.ib(type=ContinuousRewardPurePursuitProviderState, default=None)
+
+    def set_state(self, state):
+        """ Set the state of the environment
+        :param state ContinuousRewardPurePursuitProviderState: the state of the reward provider
+        """
+        if self._initial_state is None:
+            self._initial_state = state.copy()
+        self._state = state.copy()
+
+    def get_state(self):
+        """ Get the state of the reward provider
+        :return ContinuousRewardPurePursuitProviderState: the state of the reward provider
+        """
+        return self._state.copy()
+
+    def get_current_path(self):
+        """ Get the current piece of the static path
+        :return np.ndarray: The piece of the static path left to follow
+        """
+        return self._state.current_path()
+
+    def done(self, state):
+        """
+        Are there any more goals to accomplish?
+        Enviornment can have more criteria for finishing the episode,
+        e.g. getting out of bounds etc.
+        :return float: whether this episode is finished or not
+        """
+        return self._state.done(state)
+
+    def reward(self, state):
+        """
+        If you have reached any point, then 1.
+        Otherwise if you are closer to the next waypoint then you used to be,
+        get some small reward.
+
+        :param state State: full state of the environment
+        :return float: the reward
+        """
+
+        reward = -0.05
+
+        dist_to_goal, _ = pose_distances(self._state.current_goal_pose(), state.pose)
+        reward += self._state.min_spat_dist_so_far - dist_to_goal
+        self._state.min_spat_dist_so_far = dist_to_goal
+
+        if state.robot_collided:
+            reward -= 100
+
+        return reward

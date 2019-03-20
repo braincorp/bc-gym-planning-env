@@ -17,7 +17,7 @@ from bc_gym_planning_env.utilities.path_tools import refine_path
 from bc_gym_planning_env.envs.base.draw import draw_environment
 from bc_gym_planning_env.envs.base.obs import Observation
 from bc_gym_planning_env.envs.base import spaces
-from bc_gym_planning_env.envs.base.reward import ContinuousRewardProvider, generate_initial_state
+from bc_gym_planning_env.envs.base.reward import ContinuousRewardPurePursuitProvider, generate_initial_state
 from bc_gym_planning_env.utilities.gui import OpenCVGui
 
 
@@ -129,7 +129,7 @@ class PlanEnv(object):
         """
         # Stateful things
         self._robot = TricycleRobot(dimensions=get_dimensions_example(params.robot_name))
-        self._reward_provider = ContinuousRewardProvider(params=params.reward_provider_params)
+        self._reward_provider = ContinuousRewardPurePursuitProvider(params=params.reward_provider_params)
 
         # Properties, things without state
         self.action_space = spaces.Discrete(11)
