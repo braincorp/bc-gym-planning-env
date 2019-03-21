@@ -388,7 +388,7 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         self._egomap_y_bounds = np.array([-2., 2.])  # orthogonal to robot's direction
         resulting_size = (self._egomap_x_bounds[1] - self._egomap_x_bounds[0],
                           self._egomap_y_bounds[1] - self._egomap_y_bounds[0])
-        self._path_tracking_idx = 0
+        # self._path_tracking_idx = 0
 
         pixel_size = world_to_pixel(np.asarray(resulting_size, dtype=np.float64), np.zeros((2,)), resolution=0.03)
         data_shape = (pixel_size[1], pixel_size[0], 1)
