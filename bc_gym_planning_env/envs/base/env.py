@@ -129,7 +129,7 @@ class PlanEnv(object):
         """
         # Stateful things
         self._robot = TricycleRobot(dimensions=get_dimensions_example(params.robot_name))
-        self._reward_provider = ContinuousRewardPurePursuitProvider(params=params.reward_provider_params)
+        self._reward_provider = ContinuousRewardProvider(params=params.reward_provider_params)
 
         # Properties, things without state
         self.action_space = spaces.Discrete(11)
