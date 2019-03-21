@@ -65,10 +65,6 @@ class ContinuousRewardPurePursuitProviderState(object):
         :return np.ndarray(3): The current goal pose
         """
         return self.path[-1]
-        # if self.target_idx < len(self.path):
-        #     return self.path[self.target_idx]
-        # else:
-        #     raise ValueError("No path left to follow.")
 
     def current_path(self):
         """ Get the current path
@@ -106,7 +102,6 @@ class RewardParams(object):
     angular_precision = attr.ib(type=float)
     # How much reward to assign when you are progressing toward the current goal
     spatial_progress_multiplier = attr.ib(type=float, default=0.0)
-
 
 
 # def generate_initial_state(path, params):
