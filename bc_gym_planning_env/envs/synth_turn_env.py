@@ -397,12 +397,12 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
             ('goal', spaces.Box(low=-1., high=1., shape=(2, 1), dtype=np.float64))
         )))
 
-    def _find_next_goal(self, ego_path, radius=2.):
-        for i in range(self._path_tracking_idx, len(ego_path)):
-            if np.linalg.norm(ego_path[i, :2]) > radius:
-                self._path_tracking_idx = i
-                return ego_path[i]
-        return ego_path[-1]  # if no valid point, return last point
+    # def _find_next_goal(self, ego_path, radius=2.):
+    #     for i in range(self._path_tracking_idx, len(ego_path)):
+    #         if np.linalg.norm(ego_path[i, :2]) > radius:
+    #             self._path_tracking_idx = i
+    #             return ego_path[i]
+    #     return ego_path[-1]  # if no valid point, return last point
 
     def _extract_egocentric_observation(self, rich_observation):
         """Extract egocentric map and path from rich observation
@@ -431,7 +431,8 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
 
         ego_path = from_global_to_egocentric(rich_observation.path, robot_pose)
         obs = np.expand_dims(ego_costmap.get_data(), -1)
-        normalized_goal = self._find_next_goal(ego_path)[:2] / ego_costmap.world_size()
+        normalized_goal = ego_path[-1, :2] / ego_costmap.world_size()
+        # normalized_goal = self._find_next_goal(ego_path)[:2] / ego_costmap.world_size()
         normalized_goal = normalized_goal / np.linalg.norm(normalized_goal)
         return OrderedDict((('environment', obs),
                             ('goal', np.expand_dims(normalized_goal, -1))))

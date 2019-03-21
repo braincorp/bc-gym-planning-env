@@ -52,7 +52,7 @@ class ContinuousRewardPurePursuitProviderState(object):
     # Full static path to follow
     path = attr.ib(type=np.ndarray)
     # idx of current goal pose along the static path
-    target_idx = attr.ib(type=int)
+    target_idx = attr.ib(type=int, default=0)
 
     def copy(self):
         """ Get a copy of the reward provider's state
@@ -74,7 +74,15 @@ class ContinuousRewardPurePursuitProviderState(object):
         """ Get the current path
         :return np.ndarray(N, 3): the piece of static path left to follow
         """
-        return self.path
+        return self.path[:self.target_idx+1]
+
+    def update_goal(self, pose, radius=2.):
+        for i in range(self.target_idx, len(self.path)):
+            if np.linalg.norm(self.path[i, :2] - pose[:2]) > radius:
+                self.target_idx = i
+                return self.target_idx
+        self.target_idx = len(self.path) - 1
+        return self.target_idx  # if no valid point, return last point
 
     def done(self, state):
         """ Are we done?
@@ -100,33 +108,34 @@ class RewardParams(object):
     spatial_progress_multiplier = attr.ib(type=float, default=0.0)
 
 
-def generate_initial_state(path, params):
-    """ Generate the initial state of the reward provider.
-    :param path np.ndarray(N, 3): the static path
-    :param params RewardParams: parametrization of the reward provider
-    :return ContinuousRewardProviderState: the initial state of the reward provider
-    """
-    initial_pose = path[0]
-    last_reached_idx = find_last_reached(
-        initial_pose, path,
-        params.spatial_precision,
-        params.angular_precision
-    )
 
-    if last_reached_idx == len(path) - 1:
-        # We are out of path to follow at the beginning!
-        raise ValueError("Goal pose too close to initial pose")
-    else:
-        target_idx = last_reached_idx + 1
-
-    goal_pose = path[-1]
-    dist_to_goal, _ = pose_distances(goal_pose, initial_pose)
-
-    return ContinuousRewardPurePursuitProviderState(
-        min_spat_dist_so_far=dist_to_goal,
-        path=path,
-        target_idx=target_idx
-    )
+# def generate_initial_state(path, params):
+#     """ Generate the initial state of the reward provider.
+#     :param path np.ndarray(N, 3): the static path
+#     :param params RewardParams: parametrization of the reward provider
+#     :return ContinuousRewardProviderState: the initial state of the reward provider
+#     """
+#     initial_pose = path[0]
+#     last_reached_idx = find_last_reached(
+#         initial_pose, path,
+#         params.spatial_precision,
+#         params.angular_precision
+#     )
+#
+#     if last_reached_idx == len(path) - 1:
+#         # We are out of path to follow at the beginning!
+#         raise ValueError("Goal pose too close to initial pose")
+#     else:
+#         target_idx = last_reached_idx + 1
+#
+#     goal_pose = path[-1]
+#     dist_to_goal, _ = pose_distances(goal_pose, initial_pose)
+#
+#     return ContinuousRewardPurePursuitProviderState(
+#         min_spat_dist_so_far=dist_to_goal,
+#         path=path,
+#         target_idx=target_idx
+#     )
 
 
 @attr.s
@@ -159,7 +168,7 @@ class ContinuousRewardProvider(object):
         """
         return self._state.current_path()
 
-    def done(self):
+    def done(self, state):
         """
         Are there any more goals to accomplish?
         Enviornment can have more criteria for finishing the episode,
@@ -215,6 +224,33 @@ class ContinuousRewardProvider(object):
                 # We didn't do any progress
                 return 0.0
 
+    def generate_initial_state(self, path, params):
+        """ Generate the initial state of the reward provider.
+        :param path np.ndarray(N, 3): the static path
+        :param params RewardParams: parametrization of the reward provider
+        :return ContinuousRewardProviderState: the initial state of the reward provider
+        """
+        initial_pose = path[0]
+        last_reached_idx = find_last_reached(
+            initial_pose, path,
+            params.spatial_precision,
+            params.angular_precision
+        )
+
+        if last_reached_idx == len(path) - 1:
+            # We are out of path to follow at the beginning!
+            raise ValueError("Goal pose too close to initial pose")
+        else:
+            target_idx = last_reached_idx + 1
+
+        goal_pose = path[target_idx]
+        dist_to_goal, _ = pose_distances(goal_pose, initial_pose)
+
+        return ContinuousRewardProviderState(
+            min_spat_dist_so_far=dist_to_goal,
+            path=path,
+            target_idx=target_idx
+        )
 
 @attr.s
 class ContinuousRewardPurePursuitProvider(object):
@@ -265,6 +301,8 @@ class ContinuousRewardPurePursuitProvider(object):
         :return float: the reward
         """
 
+        self._state.update_goal(state.pose)
+
         reward = -0.05
 
         dist_to_goal, _ = pose_distances(self._state.current_goal_pose(), state.pose)
@@ -275,3 +313,21 @@ class ContinuousRewardPurePursuitProvider(object):
             reward -= 100
 
         return reward
+
+    def generate_initial_state(self, path, params):
+        """ Generate the initial state of the reward provider.
+        :param path np.ndarray(N, 3): the static path
+        :param params RewardParams: parametrization of the reward provider
+        :return ContinuousRewardProviderState: the initial state of the reward provider
+        """
+        initial_pose = path[0]
+
+        target_idx = 0
+        goal_pose = path[-1]
+        dist_to_goal, _ = pose_distances(goal_pose, initial_pose)
+
+        return ContinuousRewardPurePursuitProviderState(
+            min_spat_dist_so_far=dist_to_goal,
+            path=path,
+            target_idx=target_idx
+        )

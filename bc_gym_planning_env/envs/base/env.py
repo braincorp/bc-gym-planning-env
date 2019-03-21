@@ -17,7 +17,7 @@ from bc_gym_planning_env.utilities.path_tools import refine_path
 from bc_gym_planning_env.envs.base.draw import draw_environment
 from bc_gym_planning_env.envs.base.obs import Observation
 from bc_gym_planning_env.envs.base import spaces
-from bc_gym_planning_env.envs.base.reward import ContinuousRewardPurePursuitProvider, generate_initial_state
+from bc_gym_planning_env.envs.base.reward import ContinuousRewardPurePursuitProvider, ContinuousRewardProvider
 from bc_gym_planning_env.utilities.gui import OpenCVGui
 
 
@@ -82,7 +82,7 @@ class State(object):
         )
 
 
-def make_initial_state(path, costmap, robot, params):
+def make_initial_state(path, costmap, robot, reward_provider, params):
     """ Prepare the initial full state of the planning environment
     :param path: the static path to follow
     :param costmap: the static costmap containg all the obstacles
@@ -102,7 +102,7 @@ def make_initial_state(path, costmap, robot, params):
     robot_state.set_pose(initial_pose)
 
     return State(
-        reward_provider_state=generate_initial_state(path, params.reward_provider_params),
+        reward_provider_state=reward_provider.generate_initial_state(path, params.reward_provider_params),
         path=np.ascontiguousarray(path),
         original_path=np.copy(np.ascontiguousarray(path)),
         costmap=costmap,
@@ -157,7 +157,7 @@ class PlanEnv(object):
             path = _randomize(params.reward_provider_params, random_param, self._robot, costmap, path)
 
         # State
-        self._state = make_initial_state(path, costmap, self._robot, params)
+        self._state = make_initial_state(path, costmap, self._robot, self._reward_provider, params)
         self._initial_state = copy.deepcopy(self._state)
 
         self.set_state(self._state)
@@ -236,10 +236,10 @@ class PlanEnv(object):
         # Process the environment dynamics
         self._state = self._resolve_state_transition(action, self._state)
 
-        obs = self._extract_obs()
         reward = self._reward_provider.reward(self._state)
+        obs = self._extract_obs()
         info = self._extract_info()
-        done = self._extract_done()
+        done = self._extract_done(self._state)
 
         self._state.reward_provider_state = self._reward_provider.get_state()
         self._state.path = self._reward_provider.get_current_path()
@@ -290,14 +290,14 @@ class PlanEnv(object):
         """
         return self._state.current_iter >= self._params.iteration_timeout
 
-    def _extract_done(self):
+    def _extract_done(self, state):
         """
         Extract if we are done with this enviroment.
         For example we are done, if the goal has been reached,
         we have timed out or the robot has collided.
         :return bool: are we done with this planning environment?
         """
-        goal_reached = self._reward_provider.done(self._state)
+        goal_reached = self._reward_provider.done(state)
         timed_out = self._has_timed_out()
         done = goal_reached or timed_out or self._state.robot_collided
 
