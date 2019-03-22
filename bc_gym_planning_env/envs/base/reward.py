@@ -86,9 +86,7 @@ class ContinuousRewardPurePursuitProviderState(object):
         robot_pose = state.pose
         spat_dist, ang_dist = pose_distances(self.current_goal_pose(), robot_pose)
         spat_near = spat_dist < 1.0
-        # ang_near = ang_dist < self._params.goal_ang_dist
-        ang_near = True  # ang_dist < self._params.goal_ang_dist
-        goal_reached = spat_near and ang_near
+        goal_reached = spat_near
 
         return goal_reached
 
@@ -102,35 +100,6 @@ class RewardParams(object):
     angular_precision = attr.ib(type=float)
     # How much reward to assign when you are progressing toward the current goal
     spatial_progress_multiplier = attr.ib(type=float, default=0.0)
-
-
-# def generate_initial_state(path, params):
-#     """ Generate the initial state of the reward provider.
-#     :param path np.ndarray(N, 3): the static path
-#     :param params RewardParams: parametrization of the reward provider
-#     :return ContinuousRewardProviderState: the initial state of the reward provider
-#     """
-#     initial_pose = path[0]
-#     last_reached_idx = find_last_reached(
-#         initial_pose, path,
-#         params.spatial_precision,
-#         params.angular_precision
-#     )
-#
-#     if last_reached_idx == len(path) - 1:
-#         # We are out of path to follow at the beginning!
-#         raise ValueError("Goal pose too close to initial pose")
-#     else:
-#         target_idx = last_reached_idx + 1
-#
-#     goal_pose = path[-1]
-#     dist_to_goal, _ = pose_distances(goal_pose, initial_pose)
-#
-#     return ContinuousRewardPurePursuitProviderState(
-#         min_spat_dist_so_far=dist_to_goal,
-#         path=path,
-#         target_idx=target_idx
-#     )
 
 
 @attr.s
