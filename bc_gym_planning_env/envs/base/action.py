@@ -9,7 +9,7 @@ class Action(object):
     def __init__(self, command=None):
         """
         initialization
-        :param command: [v, w] if input is (2,), discrete command index if input is (1,)
+        :param command np.ndarray: [v, w] if input is (2,), discrete command index if input is (1,)
         """
         self._command_dict = {0: [0.2, 0.0],
                               1: [0.2, 0.3],

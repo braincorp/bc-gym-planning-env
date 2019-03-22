@@ -217,7 +217,7 @@ class Discrete(Space):
     def __init__(self, n):
         """
         Initialize Space
-        :param n: number of discrete choices
+        :param n int: number of discrete choices
         """
         self.n = n
         Space.__init__(self, (), np.int64)
