@@ -324,7 +324,7 @@ class RandomAisleTurnEnv(object):
         return TurnParams(
             main_corridor_length=self._rng.uniform(10, 16),
             turn_corridor_length=self._rng.uniform(4, 12),
-            turn_corridor_angle=self._rng.uniform(-0./8. * np.pi, 3./8.*np.pi),
+            turn_corridor_angle=self._rng.uniform(-3./8. * np.pi, 3./8.*np.pi),
             main_corridor_width=self._rng.uniform(1.0, 1.5),
             turn_corridor_width=self._rng.uniform(1.0, 1.5),
             flip_arnd_oy=bool(self._rng.rand() < 0.5),
