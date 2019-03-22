@@ -84,7 +84,7 @@ class ContinuousRewardPurePursuitProviderState(object):
         """ Are we done?
         :return bool: True if we are done with this environment. """
         robot_pose = state.pose
-        spat_dist, ang_dist = pose_distances(self.current_goal_pose(), robot_pose)
+        spat_dist, _ = pose_distances(self.current_goal_pose(), robot_pose)
         spat_near = spat_dist < 1.0
         goal_reached = spat_near
 
@@ -191,7 +191,8 @@ class ContinuousRewardProvider(object):
                 # We didn't do any progress
                 return 0.0
 
-    def generate_initial_state(self, path, params):
+    @staticmethod
+    def generate_initial_state(path, params):
         """ Generate the initial state of the reward provider.
         :param path np.ndarray(N, 3): the static path
         :param params RewardParams: parametrization of the reward provider
@@ -282,7 +283,8 @@ class ContinuousRewardPurePursuitProvider(object):
 
         return reward
 
-    def generate_initial_state(self, path, params):
+    @staticmethod
+    def generate_initial_state(path, params):   # pylint: disable=unused-argument
         """ Generate the initial state of the reward provider.
         :param path np.ndarray(N, 3): the static path
         :param params RewardParams: parametrization of the reward provider
