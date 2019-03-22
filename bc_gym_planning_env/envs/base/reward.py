@@ -73,6 +73,12 @@ class ContinuousRewardPurePursuitProviderState(object):
         return self.path[:self.target_idx+1]
 
     def update_goal(self, pose, radius=2.):
+        """
+        search and update the front targeting point which is the first waypoint that is more than radius away
+        :param pose: current pose of the robot
+        :param radius: the distance between the robot and the target waypoint
+        :return: the updated target waypoint's index on the path
+        """
         for i in range(self.target_idx, len(self.path)):
             if np.linalg.norm(self.path[i, :2] - pose[:2]) > radius:
                 self.target_idx = i
@@ -82,6 +88,7 @@ class ContinuousRewardPurePursuitProviderState(object):
 
     def done(self, state):
         """ Are we done?
+        :param state: current state of the environment
         :return bool: True if we are done with this environment. """
         robot_pose = state.pose
         spat_dist, _ = pose_distances(self.current_goal_pose(), robot_pose)
@@ -254,6 +261,7 @@ class ContinuousRewardPurePursuitProvider(object):
         Are there any more goals to accomplish?
         Enviornment can have more criteria for finishing the episode,
         e.g. getting out of bounds etc.
+        :param state: current state of the environment
         :return float: whether this episode is finished or not
         """
         return self._state.done(state)
