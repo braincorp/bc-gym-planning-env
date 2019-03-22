@@ -132,11 +132,12 @@ class ContinuousRewardProvider(object):
         """
         return self._state.current_path()
 
-    def done(self, state):
+    def done(self, state):  # pylint: disable=unused-argument
         """
         Are there any more goals to accomplish?
         Enviornment can have more criteria for finishing the episode,
         e.g. getting out of bounds etc.
+        :param state State: not used in this version of the reward system, but put here for consistent API interface
         :return float: whether this episode is finished or not
         """
         return self._state.done()
@@ -287,7 +288,7 @@ class ContinuousRewardPurePursuitProvider(object):
     def generate_initial_state(path, params):   # pylint: disable=unused-argument
         """ Generate the initial state of the reward provider.
         :param path np.ndarray(N, 3): the static path
-        :param params RewardParams: parametrization of the reward provider
+        :param params RewardParams: parametrization of the reward provider, not used here but kept it for consistent API call
         :return ContinuousRewardProviderState: the initial state of the reward provider
         """
         initial_pose = path[0]
