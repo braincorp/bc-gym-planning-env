@@ -219,7 +219,7 @@ class Discrete(Space):
         Space.__init__(self, (), np.int64)
 
     def sample(self):
-        return gym.spaces.np_random.randint(self.n)
+        return np.random.randint(self.n)
 
     def contains(self, x):
         if isinstance(x, int):
@@ -229,6 +229,8 @@ class Discrete(Space):
         else:
             return False
         return as_int >= 0 and as_int < self.n
+
+    __contains__ = contains
 
     def __repr__(self):
         return "Discrete(%d)" % self.n
