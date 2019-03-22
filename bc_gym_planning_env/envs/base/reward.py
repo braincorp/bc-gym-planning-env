@@ -151,9 +151,6 @@ class ContinuousRewardProvider(object):
         :param state State: full state of the environment
         :return float: the reward
         """
-        if state.robot_collided:
-            return -1.0
-
         if self._state.done():
             return 0.0
 

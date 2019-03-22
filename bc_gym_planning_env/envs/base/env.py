@@ -133,17 +133,17 @@ class PlanEnv(object):
 
         # Properties, things without state
         self.action_space = spaces.Discrete(11)
-        self._command_dict = {0: [0.2, 0.0],
-                              1: [0.2, 0.3],
-                              2: [0.2, -0.3],
-                              3: [0.2, 0.5],
-                              4: [0.2, -0.5],
-                              5: [0.2, 0.7],
-                              6: [0.2, -0.7],
-                              7: [0.2, 1.1],
-                              8: [0.2, -1.1],
-                              9: [0.2, 1.3],
-                              10: [0.2, -1.3]}
+        # self._command_dict = {0: [0.2, 0.0],
+        #                       1: [0.2, 0.3],
+        #                       2: [0.2, -0.3],
+        #                       3: [0.2, 0.5],
+        #                       4: [0.2, -0.5],
+        #                       5: [0.2, 0.7],
+        #                       6: [0.2, -0.7],
+        #                       7: [0.2, 1.1],
+        #                       8: [0.2, -1.1],
+        #                       9: [0.2, 1.3],
+        #                       10: [0.2, -1.3]}
         self.reward_range = (0.0, 1.0)
         self._gui = OpenCVGui()
         self._params = params
@@ -328,7 +328,7 @@ class PlanEnv(object):
         :param control_signals: motion primitives to executed
         :return bool: Does it collide?
         """
-        control_signals.command = self._command_dict[int(control_signals.command)]
+        # control_signals.command = self._command_dict[int(control_signals.command)]
         # control_signals.command = np.array([0.2, control_signals.command[0]])
         old_position = robot.get_pose()
         robot.step(dt, control_signals)
