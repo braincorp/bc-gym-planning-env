@@ -219,6 +219,7 @@ class ContinuousRewardProvider(object):
             target_idx=target_idx
         )
 
+
 @attr.s
 class ContinuousRewardPurePursuitProvider(object):
     """ An object resolving whether the agent should get reward.
