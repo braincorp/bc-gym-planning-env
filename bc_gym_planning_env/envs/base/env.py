@@ -243,7 +243,7 @@ class PlanEnv(object):
             state.control_queue, action, self._params.control_delay
         )
 
-        collided = self._env_step(self._state.costmap, self._robot, self._params.dt, delayed_action)
+        collided = _env_step(self._state.costmap, self._robot, self._params.dt, delayed_action)
 
         pose = self._robot.get_pose()
         delayed_pose = _get_element_from_list_with_delay(
@@ -308,27 +308,6 @@ class PlanEnv(object):
         :return Dict: empty dict (for now) """
         return {}
 
-    @staticmethod
-    def _env_step(costmap, robot, dt, control_signals):
-        """
-        Execute movement step for the robot.
-        :param costmap Costmap2D: costmap containing the obstacles to potentially collide with
-        :param robot: Robot that will execute the movement based on its model
-        :param dt: time interval between time steps
-        :param control_signals: motion primitives to executed
-        :return bool: Does it collide?
-        """
-        old_position = robot.get_pose()
-        robot.step(dt, control_signals)
-        new_position = robot.get_pose()
-
-        x, y, angle = new_position
-        collides = _pose_collides(x, y, angle, robot, costmap)
-        if collides:
-            robot.set_pose(*old_position)
-
-        return collides
-
 
 def _randomize(reward_params, random_param, robot, costmap, path):
     """
@@ -356,6 +335,27 @@ def _randomize(reward_params, random_param, robot, costmap, path):
     # TODO: Other randomization
 
     return randomized_path
+
+
+def _env_step(costmap, robot, dt, control_signals):
+    """
+    Execute movement step for the robot.
+    :param costmap Costmap2D: costmap containing the obstacles to potentially collide with
+    :param robot: Robot that will execute the movement based on its model
+    :param dt: time interval between time steps
+    :param control_signals: motion primitives to executed
+    :return bool: Does it collide?
+    """
+    old_position = robot.get_pose()
+    robot.step(dt, control_signals)
+    new_position = robot.get_pose()
+
+    x, y, angle = new_position
+    collides = _pose_collides(x, y, angle, robot, costmap)
+    if collides:
+        robot.set_pose(*old_position)
+
+    return collides
 
 
 def _pose_collides(x, y, angle, robot, costmap):
