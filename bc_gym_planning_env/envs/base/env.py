@@ -144,10 +144,6 @@ class PlanEnv(object):
                               8: [0.2, -1.1],
                               9: [0.2, 1.3],
                               10: [0.2, -1.3]}
-        # self.action_space = spaces.Box(
-        #     low=np.array([-np.pi/3]),
-        #     high=np.array([np.pi/3]),
-        #     dtype=np.float32)
         self.reward_range = (0.0, 1.0)
         self._gui = OpenCVGui()
         self._params = params
