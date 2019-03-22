@@ -215,6 +215,10 @@ class Discrete(Space):
     self.observation_space = spaces.Discrete(2)
     """
     def __init__(self, n):
+        """
+        Initialize Space
+        :param n: number of discrete choices
+        """
         self.n = n
         Space.__init__(self, (), np.int64)
 
