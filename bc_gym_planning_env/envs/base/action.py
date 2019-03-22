@@ -2,14 +2,9 @@
 from __future__ import division
 from __future__ import absolute_import
 
-import attr
-import numpy as np
 
-
-# @attr.s
 class Action(object):
     """ Object representing an 'action' - a motion primitive to execute in the environment """
-    # command = attr.ib(type=np.ndarray)
 
     def __init__(self, command=None):
         self._command_dict = {0: [0.2, 0.0],
