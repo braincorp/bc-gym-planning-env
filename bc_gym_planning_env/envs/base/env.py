@@ -17,7 +17,7 @@ from bc_gym_planning_env.utilities.path_tools import refine_path
 from bc_gym_planning_env.envs.base.draw import draw_environment
 from bc_gym_planning_env.envs.base.obs import Observation
 from bc_gym_planning_env.envs.base import spaces
-from bc_gym_planning_env.envs.base.reward import ContinuousRewardPurePursuitProvider, ContinuousRewardProvider
+from bc_gym_planning_env.envs.base.reward import ContinuousRewardPurePursuitProvider
 from bc_gym_planning_env.utilities.gui import OpenCVGui
 
 
