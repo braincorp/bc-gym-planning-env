@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 import cv2
 import torch
 import torch.optim as optim
@@ -7,51 +6,25 @@ import torch.optim as optim
 from vel.rl.metrics import EpisodeRewardMetric
 from vel.storage.streaming.stdout import StdoutStreaming
 from vel.util.random import set_seed
-
-from vel.rl.env.classic_atari import ClassicAtariEnv
-from vel.rl.vecenv.subproc import SubprocVecEnvWrapper
-
 from vel.rl.models.policy_gradient_model import PolicyGradientModelFactory, PolicyGradientModel
 from vel.rl.models.backbone.nature_cnn_two_tower import NatureCnnTwoTowerFactory
-from vel.rl.models.backbone.nature_cnn2 import NatureCnnFactory2
-
-from vel.rl.models.deterministic_policy_model import DeterministicPolicyModelFactory, DeterministicPolicyModel
-from vel.rl.models.backbone.mlp import MLPFactory
-
-from vel.rl.reinforcers.on_policy_iteration_reinforcer import (
-    OnPolicyIterationReinforcer, OnPolicyIterationReinforcerSettings
-)
-from vel.rl.reinforcers.buffered_single_off_policy_iteration_reinforcer import (
-    BufferedSingleOffPolicyIterationReinforcer, BufferedSingleOffPolicyIterationReinforcerSettings
-)
-
+from vel.rl.models.deterministic_policy_model import DeterministicPolicyModel
+from vel.rl.reinforcers.on_policy_iteration_reinforcer import OnPolicyIterationReinforcer, OnPolicyIterationReinforcerSettings
 from vel.schedules.linear import LinearSchedule
 from vel.rl.algo.policy_gradient.ppo import PpoPolicyGradient
-from vel.rl.algo.policy_gradient.a2c import A2CPolicyGradient
-from vel.rl.algo.policy_gradient.acer import AcerPolicyGradient
-from vel.rl.algo.policy_gradient.ddpg import DeepDeterministicPolicyGradient
-
-from vel.rl.env_roller.single.deque_replay_roller_ou_noise import DequeReplayRollerOuNoise
-
 from vel.rl.env_roller.vec.step_env_roller import StepEnvRoller
-
 from vel.api.info import TrainingInfo, EpochInfo
 from vel.rl.commands.rl_train_command import FrameTracker
+from vel.openai.baselines.common.vec_env.dummy_vec_env import DummyVecEnv
 
-import vel.openai.baselines.common.cmd_util as butils
-
-import gym
-import bc_gym_planning_env
-from bc_gym_planning_env.envs.synth_turn_env import RandomAisleTurnEnv
 from bc_gym_planning_env.envs.synth_turn_env import ColoredEgoCostmapRandomAisleTurnEnv
 from bc_gym_planning_env.envs.base.action import Action
 
-from vel.openai.baselines import logger
-from vel.openai.baselines.bench import Monitor
-from vel.openai.baselines.common.vec_env.dummy_vec_env import DummyVecEnv
-
 
 def train_model():
+    """a sample training script, that creates a PPO instance and train it with bc-gym environment
+    :return: None
+    """
     device = torch.device('cpu')
     seed = 1001
 
@@ -59,8 +32,6 @@ def train_model():
     set_seed(seed)
     env_function = lambda: ColoredEgoCostmapRandomAisleTurnEnv()
     vec_env = DummyVecEnv([env_function])
-    # vec_env.reset()
-    # vec_env.step(vec_env.action_space.sample())
 
     # Again, use a helper to create a model
     # But because model is owned by the reinforcer, model should not be accessed using this variable
@@ -68,13 +39,6 @@ def train_model():
     model = PolicyGradientModelFactory(
         backbone=NatureCnnTwoTowerFactory(input_width=133, input_height=117, input_channels=1)
     ).instantiate(action_space=vec_env.action_space)
-
-    # model_factory = DeterministicPolicyModelFactory(
-    #     policy_backbone=NatureCnnFactory(input_width=133, input_height=117, input_channels=1),
-    #     value_backbone=NatureCnnFactory2(input_width=133, input_height=117, input_channels=1),
-    # )
-    # model = model_factory.instantiate(action_space=vec_env.action_space)
-
 
     # Set schedule for gradient clipping.
     cliprange = LinearSchedule(
@@ -147,6 +111,14 @@ def train_model():
 
 
 def evaluate_model(model, env, device, takes=1, debug=False):
+    """evaluate the performance of a rl model with a given environment
+    :param model: a trained rl model
+    :param env: environment
+    :param device: cpu or gpu
+    :param takes: number of trials/rollout
+    :param debug: record a video in debug mode
+    :return: None
+    """
     model.eval()
 
     rewards = []
@@ -167,19 +139,21 @@ def evaluate_model(model, env, device, takes=1, debug=False):
 
 @torch.no_grad()
 def record_take(model, env_instance, device, debug=False):
+    """run one rollout of the rl model with the environment, until done is true
+    :param model: rl policy model
+    :param env_instance: an instance of the environment to be evaluated
+    :param device: cpu or gpu
+    :param debug: debug mode has gui output
+    :return: some basic metric info of this rollout
+    """
     frames = []
     steps = 0
     rewards = 0
-
     observation = env_instance.reset()
-
-    # frames.append(env_instance.render('rgb_array'))
 
     print("Evaluating environment...")
 
     while True:
-        # observation_array = np.expand_dims(np.array(observation), axis=0)
-        # observation_tensor = torch.from_numpy(observation_array).to(device)
         observation_tensor = _dict_to_tensor(observation, device)
         if isinstance(model, PolicyGradientModel):
             actions = model.step(observation_tensor, argmax_sampling=False)['actions'].to(device)[0]
@@ -187,10 +161,8 @@ def record_take(model, env_instance, device, debug=False):
             actions = model.step(observation_tensor)['actions'].to(device)[0]
         else:
             raise NotImplementedError
-        # print("actions: {}, observation: {}".format(actions.cpu().numpy(), np.ravel(observation_tensor['goal'].cpu().numpy())))
         action_class = Action(command=actions.cpu().numpy())
         observation, reward, done, epinfo = env_instance.step(action_class)
-        # print("reward: {}".format(reward))
         steps += 1
         rewards += reward
         if debug or device.type == 'cpu':
@@ -202,7 +174,11 @@ def record_take(model, env_instance, device, debug=False):
 
 
 def _dict_to_tensor(numpy_array_dict, device):
-    """ Convert numpy array to a tensor """
+    """Convert numpy array to a tensor
+    :param numpy_array_dict dict: a dictionary of np.array
+    :param device: put tensor on cpu or gpu
+    :return: a dictionary of torch tensors
+    """
     if isinstance(numpy_array_dict, dict):
         torch_dict = {}
         for k, v in numpy_array_dict.items():
@@ -213,19 +189,17 @@ def _dict_to_tensor(numpy_array_dict, device):
 
 
 def eval_model():
+    """load a checkpoint data and evaluate its performance
+    :return: None
+    """
     device = torch.device('cpu')
     seed = 1001
 
     # Set random seed in python std lib, numpy and pytorch
     set_seed(seed)
 
-    vec_env = butils.make_vec_env(
-        env_id='EgoCostmapAsImgRandomTurnRoboPlanning-v0',
-        env_type='robo_planning',
-        num_env=1,
-        seed=0,
-        flatten_dict_observations=False
-    )
+    env_function = lambda: ColoredEgoCostmapRandomAisleTurnEnv()
+    vec_env = DummyVecEnv([env_function])
     vec_env.reset()
 
     model = PolicyGradientModelFactory(
@@ -238,6 +212,10 @@ def eval_model():
 
 
 def save_as_video(frames):
+    """function to record a demo video
+    :param frames list[np.array]:  a list of images
+    :return: None, video saved as a file
+    """
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     video_shape = (400, 600)
