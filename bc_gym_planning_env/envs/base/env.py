@@ -87,6 +87,7 @@ def make_initial_state(path, costmap, robot, reward_provider, params):
     :param path: the static path to follow
     :param costmap: the static costmap containg all the obstacles
     :param robot: robot - we will execute the motion based on its model
+    :param reward_provider: an instance of the reward computing class
     :param params: parametriztion of the environment
     :return State: the full initial state of the environment
     """
@@ -280,6 +281,7 @@ class PlanEnv(object):
         Extract if we are done with this enviroment.
         For example we are done, if the goal has been reached,
         we have timed out or the robot has collided.
+        :param state: current state of the environment
         :return bool: are we done with this planning environment?
         """
         goal_reached = self._reward_provider.done(state)
