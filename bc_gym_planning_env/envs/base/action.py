@@ -7,6 +7,10 @@ class Action(object):
     """ Object representing an 'action' - a motion primitive to execute in the environment """
 
     def __init__(self, command=None):
+        """
+        initialization
+        :param command: [v, w] if input is (2,), discrete command index if input is (1,)
+        """
         self._command_dict = {0: [0.2, 0.0],
                               1: [0.2, 0.3],
                               2: [0.2, -0.3],
