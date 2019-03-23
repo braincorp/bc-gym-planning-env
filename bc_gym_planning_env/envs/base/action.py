@@ -2,6 +2,8 @@
 from __future__ import division
 from __future__ import absolute_import
 
+import numpy as np
+
 
 class Action(object):
     """ Object representing an 'action' - a motion primitive to execute in the environment """
@@ -25,6 +27,9 @@ class Action(object):
         if command.shape == (2,):
             self.command = command
         elif command.shape == (1,):
-            self.command = self._command_dict[command[0]]
+            # self.command = self._command_dict[command[0]]
+            self.command = np.array([0.2, command[0]])
+        elif command.shape == (1,1):
+            self.command = np.array([0.2, command[0, 0]])
         else:
             raise NotImplementedError

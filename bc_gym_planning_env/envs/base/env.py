@@ -133,7 +133,11 @@ class PlanEnv(object):
         self._reward_provider = ContinuousRewardPurePursuitProvider(params=params.reward_provider_params)
 
         # Properties, things without state
-        self.action_space = spaces.Discrete(11)
+        # self.action_space = spaces.Discrete(11)
+        self.action_space = spaces.Box(
+            low=np.array([-np.pi/3]),
+            high=np.array([np.pi/3]),
+            dtype=np.float32)
         self.reward_range = (0.0, 1.0)
         self._gui = OpenCVGui()
         self._params = params
