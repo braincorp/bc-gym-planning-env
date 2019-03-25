@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
         while not done:
             command = env.action_space.sample()
-            command.v += 0.3
+            command.command[0] += 0.3
             # print("Applying {}".format(command))
             obs, _, done, _ = env.step(command)
             env.render()

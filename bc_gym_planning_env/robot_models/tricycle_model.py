@@ -12,8 +12,12 @@ from bc_gym_planning_env.robot_models.robot_interface import IRobot
 from bc_gym_planning_env.robot_models.robot_drive_types import RobotDriveTypes
 from bc_gym_planning_env.utilities.coordinate_transformations import diff_angles
 from bc_gym_planning_env.utilities.map_drawing_utils import \
-    get_pixel_footprint_for_drawing, get_physical_angle_from_drawing, puttext_centered
+    get_pixel_footprint_for_drawing, get_physical_angle_from_drawing
 from bc_gym_planning_env.utilities.path_tools import blit, draw_arrow, path_velocity
+from bc_gym_planning_env.utilities.serialize import Serializable
+from bc_gym_planning_env.robot_models.robot_dimensions_examples import get_dimensions_example
+from bc_gym_planning_env.robot_models.robot_dimensions_interface import IDimensions
+from bc_gym_planning_env.robot_models.standard_robot_names_examples import StandardRobotExamples
 
 
 def vw_from_front_wheel_velocity(front_wheel_velocity, front_wheel_angle, front_wheel_from_axis):
@@ -228,7 +232,7 @@ def diff_drive_control_to_tricycle(linear_vel, angular_vel, front_wheel_angle,
 
 
 @attr.s
-class TricycleRobotState(object):
+class TricycleRobotState(Serializable):
     """ State of the tricycle robot. """
     x = attr.ib(default=0.0, type=float)
     y = attr.ib(default=0.0, type=float)
@@ -238,6 +242,9 @@ class TricycleRobotState(object):
     w = attr.ib(default=0.0, type=float)
     steering_motor_command = attr.ib(default=0.0, type=float)
     wheel_angle = attr.ib(default=0.0, type=float)
+
+    VERSION = 1
+    robot_type_name = StandardRobotExamples.INDUSTRIAL_TRICYCLE_V1
 
     def copy(self):
         """ Return the copy of the state
@@ -270,36 +277,66 @@ class TricycleRobotState(object):
         """
         return [self.wheel_angle, self.v, self.w, self.steering_motor_command]
 
+    def get_robot_type_name(self):
+        """ Get the type (string describing the type) of robot type.
+        :return StandardRobotExamples: enum member defining type of robots type
+        """
+        return self.robot_type_name
 
-class TricycleRobot(IRobot):
+
+@attr.s
+class TricycleRobot(IRobot, Serializable):
     """ Tricycle drive robot. """
+    _dimensions = attr.ib(type=IDimensions)
+    _footprint_scale = attr.ib(default=1.0, type=float)
+    _dynamic_model = attr.ib(default=True, type=bool)
+    _model_front_column_pid = attr.ib(default=True, type=bool)
+    _noise_parameters = attr.ib(default=None)
+    _wheel_angle = attr.ib(default=0.0, type=float)
+    _state = attr.ib(                          # parameters of the reward provider
+        default=attr.Factory(
+            lambda self: TricycleRobotState(
+                # pylint: disable=protected-access
+                wheel_angle=self._wheel_angle
+            ),
+            takes_self=True
+        )
+    )
 
-    def __init__(self, dimensions, footprint_scale=1.0,
-                 wheel_angle=0.,
-                 model_front_column_pid=True,
-                 dynamic_model=True
-                 ):
-        '''
-        :param dimensions object: dimensions object
-        :param footprint_scale: a factor to make the footprint smaller or bigger than the actual
-        :param wheel_angle float:  wheel angle
-        :param model_front_column_pid bool: turn on PID modeling or assume immediate steering wheel rotation
-        :param dynamic_model bool: use dynamic model with mass or a kinematic one
-        '''
-        self._footprint_scaling = footprint_scale
-        self._noise_parameters = None
-        self._model_front_column_pid = model_front_column_pid
-        self._dynamic_model = dynamic_model
-        self._dimensions = dimensions
-        self._state = TricycleRobotState(wheel_angle=wheel_angle)
+    VERSION = 1
 
-        # TODO: Shoud be in the state (but in some other abstraction)
-        self._scrubdeck_status = {
-            'vacuum': False,
-            'brushes': False
-        }
+    @classmethod
+    def deserialize(cls, state):
+        """ Deserialize the object from the dict of basic types.
+        :param state dict: dict (serialized) representation of the object
+        :return TricycleRobot: the deserialized object
+        """
+        ver = state.pop('version')
+        assert ver == cls.VERSION
+        state['state'] = TricycleRobotState.deserialize(state['state'])
+        state['dimensions'] = get_dimensions_example((state['dimensions']))
+        return cls(**state)
+
+    def serialize(self):
+        """ Serialize object to dict of basic types: int, np.ndarray, etc.
+        :return dict: dict (serialized) representation of the object
+        """
+        resu = attr.asdict(self)
+        resu['version'] = self.VERSION
+        resu['dimensions'] = self._dimensions.get_name()
+        resu['state'] = self._state.serialize()
+        return resu
+
+    def get_state_type(self):
+        """ Get the type of the state.
+        :return type: type of the robot's state
+        """
+        return type(self.get_initial_state())
 
     def get_initial_state(self):
+        """ Get initial state of the robot
+        :return DiffdriveRobotState: default initial state of the robot
+        """
         return TricycleRobotState()
 
     def set_state(self, state):
@@ -316,10 +353,16 @@ class TricycleRobot(IRobot):
         return self._state.copy()
 
     def get_drive_type(self):
+        """ Get the type (string describing the type) of robot drive type.
+        :return RobotDriveTypes: enum member defining type of robots drive type
+        """
         return RobotDriveTypes.TRICYCLE
 
     def get_footprint(self):
-        footprint = self._dimensions.footprint() * self._footprint_scaling
+        """ Get scaled footprint of the robot.
+        :return np.ndarray: appropriately scaled footprint of the robot.
+        """
+        footprint = self._dimensions.footprint() * self._footprint_scale
         return footprint
 
     def get_footprint_scale(self):
@@ -327,7 +370,7 @@ class TricycleRobot(IRobot):
         Get scale of the footprint.
         :return float: Scale of the footprint
         """
-        return self._footprint_scaling
+        return self._footprint_scale
 
     def get_pose(self):
         """
@@ -523,14 +566,6 @@ class TricycleRobot(IRobot):
                        color=(0, 0, 255),
                        thickness=1)
 
-        scrubdeck_status_str = ''
-        for k, v in self._scrubdeck_status.items():
-            if v:
-                scrubdeck_status_str += '%s+' % k
-        if len(scrubdeck_status_str) > 0:
-            scrubdeck_status_str = scrubdeck_status_str[:-1]
-            puttext_centered(image, scrubdeck_status_str, (image.shape[1] // 2, 10), color=(0, 0, 255))
-
     def set_noise_parameters(self, noise_parameters):
         """ Sets the noise parameters
         :param noise_parameters:  the noise parameters, TODO write me better
@@ -538,25 +573,7 @@ class TricycleRobot(IRobot):
         self._noise_parameters = noise_parameters
 
     def get_robot_type_name(self):
+        """ Get the type (string describing the type) of robot type.
+        :return StandardRobotExamples: enum member defining type of robots type
+        """
         return self._dimensions.get_name()
-
-    def get_scrubdeck_status(self):
-        """
-        Get scrubdeck state
-        :return Dict[String, object]: different fields for scrubber deck
-        """
-        return self._scrubdeck_status
-
-    def apply_scrubdeck_control(self, scrubdeck_control):
-        """
-        Set scrubdeck state
-        :param scrubdeck_control Dict[String, object]: different fields for scrubber deck
-        """
-
-        if len(scrubdeck_control) == 0:
-            return
-
-        if 'vac' in scrubdeck_control:
-            self._scrubdeck_status['vacuum'] = bool(scrubdeck_control['vac'])
-        if 'one_touch' in scrubdeck_control:
-            self._scrubdeck_status['brushes'] = bool(scrubdeck_control['one_touch'])
