@@ -186,6 +186,7 @@ class IndustrialTricycleV1Dimensions(IDimensions, ITricycleDimensions, IFootprin
             [1303.15, -286.54],
             [1341.34, -118.37]
         ]) / 1000.
+        footprint[:, 1] *= 0.95
         assert(footprint[0, 1] == 0)  # bumper front-center has to be the first one (just so that everything is correct)
         return footprint
 
