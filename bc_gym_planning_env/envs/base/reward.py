@@ -5,10 +5,11 @@ import attr
 import numpy as np
 
 from bc_gym_planning_env.utilities.path_tools import pose_distances, find_last_reached
+from bc_gym_planning_env.utilities.serialize import Serializable
 
 
-@attr.s
-class ContinuousRewardProviderState(object):
+@attr.s(cmp=False)
+class ContinuousRewardProviderState(Serializable):
     """ State of the continuous reward provider: """
     # How much progress has the agent done towards current goal pose
     min_spat_dist_so_far = attr.ib(type=float)
@@ -16,6 +17,26 @@ class ContinuousRewardProviderState(object):
     path = attr.ib(type=np.ndarray)
     # idx of current goal pose along the static path
     target_idx = attr.ib(type=int)
+
+    VERSION = 1
+
+    def __eq__(self, other):
+        if not isinstance(other, ContinuousRewardProviderState):
+            return False
+
+        if (self.path != other.path).any():
+            return False
+
+        if self.min_spat_dist_so_far != other.min_spat_dist_so_far:
+            return False
+
+        if self.target_idx != other.target_idx:
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def copy(self):
         """ Get a copy of the reward provider's state
@@ -27,6 +48,7 @@ class ContinuousRewardProviderState(object):
         """ Get the current goal pose
         :return np.ndarray(3): The current goal pose
         """
+        # pylint: disable=unsubscriptable-object
         if self.target_idx < len(self.path):
             return self.path[self.target_idx]
         else:
@@ -36,6 +58,7 @@ class ContinuousRewardProviderState(object):
         """ Get the current path
         :return np.ndarray(N, 3): the piece of static path left to follow
         """
+        # pylint: disable=invalid-slice-index,unsubscriptable-object
         return self.path[self.target_idx:]
 
     def done(self):
@@ -45,8 +68,9 @@ class ContinuousRewardProviderState(object):
 
 
 @attr.s
-class RewardParams(object):
+class RewardParams(Serializable):
     """ Parametrization of the continuous reward provider"""
+    VERSION = 1
     # How close spatially do you have to be to count the goal as reached
     spatial_precision = attr.ib(type=float)
     # How close angularly do you have to be to count the goal as reached

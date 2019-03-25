@@ -141,10 +141,12 @@ class EgocentricCostmap(ObservationWrapper):
         ego_path = from_global_to_egocentric(observation.path, robot_pose)
         obs = np.expand_dims(ego_costmap.get_data(), -1)
         if len(ego_path) == 0:
+            # 3 is goal len + 6 is len of the state
+            size_of_goal_n_state = 3 + observation.robot_state.to_numpy_array().shape[0]
             return OrderedDict((
                 ('env', obs),
                 # 9 values characterize robot's state including velocities
-                ('goal_n_state', np.expand_dims(np.zeros(9, dtype=np.float32), -1))
+                ('goal_n_state', np.expand_dims(np.zeros(size_of_goal_n_state, dtype=np.float32), -1))
             ))
         else:
             normalized_goal = ego_path[0, :2] / ego_costmap.world_size()

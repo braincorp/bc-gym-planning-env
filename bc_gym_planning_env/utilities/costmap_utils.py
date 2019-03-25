@@ -82,7 +82,7 @@ def rotate_costmap(costmap, angle, center_pixel_coords=None, border_value=0):
     :param angle: angle to rotate (in radians, world coordinates - positive angle is anticlockwise)
     :param center_pixel_coords: center of rotation in the pixel coordinates (None for center of the image)
     :param border_value: value to fill in when rotating
-    :return: the rotated mat
+    :return: rotated costmap
     '''
     # opencv uses image coordintates, we use world coordinates
     deg_angle = np.rad2deg(-angle)
