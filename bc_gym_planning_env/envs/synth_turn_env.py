@@ -175,6 +175,7 @@ def path_and_costmap_from_config(params):
         Wall(from_pt=c, to_pt=d),
         Wall(from_pt=d, to_pt=e),
         Wall(from_pt=j, to_pt=g),
+        Wall(from_pt=(a+i)/2, to_pt=g),
         Wall(from_pt=g, to_pt=h)
     ]
 
@@ -324,8 +325,8 @@ class RandomAisleTurnEnv(object):
             main_corridor_length=self._rng.uniform(10, 16),
             turn_corridor_length=self._rng.uniform(4, 12),
             turn_corridor_angle=self._rng.uniform(-3./8. * np.pi, 3./8.*np.pi),
-            main_corridor_width=self._rng.uniform(0.5, 1.5),
-            turn_corridor_width=self._rng.uniform(0.5, 1.5),
+            main_corridor_width=self._rng.uniform(1.0, 1.5),
+            turn_corridor_width=self._rng.uniform(1.0, 1.5),
             flip_arnd_oy=bool(self._rng.rand() < 0.5),
             flip_arnd_ox=bool(self._rng.rand() < 0.5),
             rot_theta=self._rng.uniform(0, 2*np.pi)
