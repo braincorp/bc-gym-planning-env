@@ -7,6 +7,32 @@ import numpy as np
 from bc_gym_planning_env.utilities.path_tools import pose_distances, find_last_reached
 
 
+class RewardProviderExamples:
+    """ Names of reward provider"""
+    CONTINUOUS_REWARD = 'continuous_reward'
+    CONTINUOUS_REWARD_PURE_PURSUIT = 'continuous_reward_pure_pursuit'
+
+
+def get_reward_provider_example(reward_provider_name):
+    """
+    Get class corresponding to reward_provider_name
+
+    :param reward_provider_name: reward provider name string (see below for valid inputs)
+    :return reward provider instance: an instance of a particular type of reward
+    """
+    name_to_reward_provider = \
+        {RewardProviderExamples.CONTINUOUS_REWARD: ContinuousRewardProvider,
+         RewardProviderExamples.CONTINUOUS_REWARD_PURE_PURSUIT: ContinuousRewardPurePursuitProvider}
+
+    valid_reward_provider_types = list(name_to_reward_provider.keys())
+
+    if reward_provider_name not in valid_reward_provider_types:
+        raise AssertionError("Unknown reward provider: {}. Should be one of {}".format(reward_provider_name,
+                                                                                       valid_reward_provider_types))
+
+    return name_to_reward_provider[reward_provider_name]
+
+
 @attr.s
 class ContinuousRewardProviderState(object):
     """ State of the continuous reward provider: """

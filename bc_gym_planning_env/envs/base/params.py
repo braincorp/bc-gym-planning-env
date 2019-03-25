@@ -6,7 +6,7 @@ import attr
 import numpy as np
 
 from bc_gym_planning_env.robot_models.standard_robot_names_examples import StandardRobotExamples
-from bc_gym_planning_env.envs.base.reward import RewardParams
+from bc_gym_planning_env.envs.base.reward import RewardParams, RewardProviderExamples
 
 
 @attr.s(frozen=True)
@@ -27,6 +27,8 @@ class EnvParams(object):
     control_delay = attr.ib(default=0, type=int)               # how much delay in perceived controls
     state_delay = attr.ib(default=0, type=int)                 # state perception delay, in reality ~ 0.11s (2 steps)
 
+    reward_provider_name = attr.ib(                            # name of the reward provider
+        default=RewardProviderExamples.CONTINUOUS_REWARD_PURE_PURSUIT)
     reward_provider_params = attr.ib(                          # parameters of the reward provider
         default=attr.Factory(
             lambda self: RewardParams(
