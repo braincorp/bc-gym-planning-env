@@ -33,7 +33,8 @@ class Space(Serializable):
         """
         return {
             Box.SPACE_NAME: Box,
-            Dict.SPACE_NAME: Dict
+            Dict.SPACE_NAME: Dict,
+            Discrete.SPACE_NAME: Discrete
         }
 
     def sample(self):
@@ -252,6 +253,8 @@ class Discrete(Space):
     Example usage:
     self.observation_space = spaces.Discrete(2)
     """
+    SPACE_NAME = 'Discrete'
+
     def __init__(self, n):
         """
         Initialize Space
@@ -259,6 +262,14 @@ class Discrete(Space):
         """
         self.n = n
         Space.__init__(self, (), np.int64)
+
+    def serialize(self):
+        return dict(
+            name=Discrete.SPACE_NAME,
+            n=self.n,
+            shape=None,
+            dtype='uint8'
+        )
 
     def sample(self):
         return np.random.randint(self.n)
