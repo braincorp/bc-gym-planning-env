@@ -19,8 +19,8 @@ from bc_gym_planning_env.envs.base.draw import draw_environment
 from bc_gym_planning_env.envs.base.obs import Observation
 from bc_gym_planning_env.envs.base.params import EnvParams
 from bc_gym_planning_env.envs.base import spaces
-from bc_gym_planning_env.envs.base.reward import ContinuousRewardProvider, ContinuousRewardProviderState
-from bc_gym_planning_env.envs.base.reward import get_reward_provider_example
+from bc_gym_planning_env.envs.base.reward_provider_examples_factory import\
+    create_reward_provider_state, get_reward_provider_example
 from bc_gym_planning_env.utilities.gui import OpenCVGui
 
 
@@ -143,7 +143,9 @@ class State(Serializable):
         assert ver == cls.VERSION
 
         state['costmap'] = CostMap2D.from_state(state['costmap'])
-        state['reward_provider_state'] = ContinuousRewardProviderState.deserialize(state['reward_provider_state'])
+
+        reward_provider_state_instance = create_reward_provider_state(state.pop('reward_provider_state_name'))
+        state['reward_provider_state'] = reward_provider_state_instance.deserialize(state['reward_provider_state'])
 
         # prepare for robot state deserialization
         robot_instance = create_standard_robot(state.pop('robot_type_name'))
@@ -166,6 +168,7 @@ class State(Serializable):
         # pylint: disable=no-member
         resu['version'] = self.VERSION
         resu['costmap'] = self.costmap.get_state()
+        resu['reward_provider_state_type_name'] = self.reward_provider_state.get_reward_provider_state_type_name()
         resu['reward_provider_state'] = self.reward_provider_state.serialize()
         resu['robot_type_name'] = self.robot_state.get_robot_type_name()
         resu['robot_state'] = self.robot_state.serialize()

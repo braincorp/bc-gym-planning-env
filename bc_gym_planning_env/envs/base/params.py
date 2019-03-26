@@ -7,7 +7,8 @@ import numpy as np
 
 from bc_gym_planning_env.robot_models.standard_robot_names_examples import StandardRobotExamples
 from bc_gym_planning_env.utilities.serialize import Serializable
-from bc_gym_planning_env.envs.base.reward import RewardParams, RewardProviderExamples
+from bc_gym_planning_env.envs.base.reward import RewardParams
+from bc_gym_planning_env.envs.base.reward_provider_examples import RewardProviderExamples
 
 
 @attr.s(frozen=True)
