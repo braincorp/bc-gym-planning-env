@@ -116,12 +116,14 @@ class ContinuousRewardPurePursuitProviderState(Serializable):
         """ Get the current goal pose
         :return np.ndarray(3): The current goal pose
         """
+        # pylint: disable=unsubscriptable-object
         return self.path[-1]
 
     def current_path(self):
         """ Get the current path
         :return np.ndarray(N, 3): the piece of static path left to follow
         """
+        # pylint: disable=unsubscriptable-object
         return self.path[:self.target_idx+1]
 
     def update_goal(self, pose, radius=2.):
@@ -131,6 +133,7 @@ class ContinuousRewardPurePursuitProviderState(Serializable):
         :param radius: the distance between the robot and the target waypoint
         :return: the updated target waypoint's index on the path
         """
+        # pylint: disable=unsubscriptable-object
         for i in range(self.target_idx, len(self.path)):
             if np.linalg.norm(self.path[i, :2] - pose[:2]) > radius:
                 self.target_idx = i
