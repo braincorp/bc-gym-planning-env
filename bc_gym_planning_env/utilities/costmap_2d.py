@@ -36,6 +36,24 @@ class CostMap2D(object):
         assert self._origin.dtype == np.float64
         assert not self._origin.flags.writeable
 
+    def __eq__(self, other):
+        if not isinstance(other, CostMap2D):
+            return False
+
+        if self._resolution != other.get_resolution():
+            return False
+
+        if not (self._origin == other.get_origin()).all():
+            return False
+
+        if not (self._data == other.get_data()).all():
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     @staticmethod
     def create_empty(world_size, resolution, world_origin=(0., 0.), dtype=np.uint8):
         """

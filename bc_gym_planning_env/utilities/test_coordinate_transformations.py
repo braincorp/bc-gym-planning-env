@@ -1697,6 +1697,7 @@ if __name__ == "__main__":
     test_project_poses_with_time_raises()
     test_fast_project_poses_wraparound()
     test_normalize_angles()
+    test_angle_normalize_pybind_checks()
     test_from_egocentric_to_global()
     test_from_global_to_egocentric()
     test_map_to_odom()
