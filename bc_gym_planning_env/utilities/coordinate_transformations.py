@@ -41,12 +41,12 @@ try:
     inverse_transform = inverse_transform_2d_impl
     """
     First unrotate, then untranslate
-    
+
     Defined s.t T + inverse_transform(T) = (0, 0, 0)
     This means that the inverse flips the operator:  inverse_transform(T_i^j) = T_j^i.
-    
+
     See the appendix (p. 328) in
-    
+
     Tardos, J. D., Neira, J., Newman, P. M., & Leonard, J. J. (2002).
     Robust Mapping and Localization in Indoor Environments Using Sonar Data.
     The International Journal of Robotics Research, 21(4), 311-330.
@@ -286,9 +286,8 @@ def from_homogeneous_matrix(transform_matrix):
     return np.array([transform_matrix[0, 2], transform_matrix[1, 2],
                      np.arctan2(transform_matrix[1, 0], transform_matrix[0, 0])])
 
-
 try:
-    from shining_software.weave_utils.inline_function import inline_function
+    from brain.shining_utils.env_utils import native_project_poses
 
     def project_poses(transform, poses):
         """
@@ -297,54 +296,14 @@ try:
         :param transform: pose transformation
         :param poses: poses to transform
         :return: transformed poses
-
         """
         if len(poses) == 0:
             return poses
-        assert transform.dtype == np.float64
-        assert transform.flags["C_CONTIGUOUS"]
         assert transform.shape[0] == 3
         assert poses.shape[1] == 3
-        assert poses.dtype == np.float64
-        assert poses.flags["C_CONTIGUOUS"]
+
         projected_poses_result = np.empty_like(poses)
-        code = \
-            '''
-            int size = poses.shape()[0];
-            double da = transform(2);
-            double c = cos(da);
-            double s = sin(da);
-            double dx = transform(0);
-            double dy = transform(1);
-            double angle;
-            
-            double* p_projected = &projected_poses(0, 0);
-            double* p_poses = &poses(0, 0);
-            double* p_poses_next = &poses(0, 1);
-            for (int i = 0; i<size; ++i) {
-                // project x and y
-                *p_projected = (*p_poses)*c - (*p_poses_next)*s + dx;
-                ++p_projected;
-                *p_projected = (*p_poses)*s + (*p_poses_next)*c + dy;
-                ++p_projected;
-                
-                // add and normalize angle
-                ++p_poses_next;
-                *p_projected = remainder((*p_poses_next) + da, 2*M_PI);
-                ++p_projected;
-                
-                // increment pointers
-                p_poses += 3;  // go to next x coordinate
-                p_poses_next += 2; // this was already incremented for fetching angle
-            }
-            '''
-        inline_function(
-            'project_poses',
-            code,
-            {'transform': transform,
-             'poses': poses,
-             'projected_poses': projected_poses_result})
-        projected_poses_result[:, 2] = projected_poses_result[:, 2]
+        native_project_poses(transform, poses, projected_poses_result)
         return projected_poses_result
 
 except ImportError:
@@ -639,7 +598,7 @@ def transforms_between_pose_pairs(src_poses, dst_poses):
 
 
 try:
-    from shining_software.weave_utils.inline_function import inline_function
+    from brain.shining_utils.env_utils import native_compose_covariances
 
     def compose_covariances(t_a_b, s_a_b, t_b_c, s_b_c, debug=False):
         """
@@ -660,42 +619,14 @@ try:
         :return: the composed covariance matrix associated with T_a^c
         """
         # pylint: disable=invalid-name
-        t_a_b_theta_py = float(t_a_b[2])
-        tbx_py = float(t_b_c[0])
-        tby_py = float(t_b_c[1])
+        t_a_b_theta = float(t_a_b[2])
+        tbx = float(t_b_c[0])
+        tby = float(t_b_c[1])
 
         jacobian_a = np.zeros((3, 3), dtype=np.float64)
         jacobian_b = np.zeros((3, 3), dtype=np.float64)
 
-        code = """
-            double t_a_b_theta = t_a_b_theta_py;
-            double tbx = tbx_py;
-            double tby = tby_py;
-    
-            // Compute J_A, J_B
-            // (See p. 1137, Appendinx B in SLAM in Large-Scale Cyclic Environments Using the ATLAS Framework, Bosse et al, 2004)
-            for (int i=0; i<3; ++i) {
-                J_A(i, i) = 1;
-                J_B(i, i) = 1;
-            }
-    
-            double s = sin(t_a_b_theta);
-            double c = cos(t_a_b_theta);
-    
-            J_A(0, 2) = -s*tbx - c*tby;
-            J_A(1, 2) = c*tbx - s*tby;
-    
-            J_B(0, 0) = c;
-            J_B(0, 1) = -s;
-            J_B(1, 0) = s;
-            J_B(1, 1) = c;
-        """
-
-        inline_function(
-            '_compose_covariances', code,
-            {"t_a_b_theta_py": t_a_b_theta_py, "tbx_py": tbx_py, "tby_py": tby_py,
-             "J_A": jacobian_a, "J_B": jacobian_b},
-            extra_compile_args=['-O3'])
+        native_compose_covariances(t_a_b_theta, tbx, tby, jacobian_a, jacobian_b)
 
         # Eqn. (2.6)
         covariance = np.dot(np.dot(jacobian_a, s_a_b), jacobian_a.T) + np.dot(np.dot(jacobian_b, s_b_c), jacobian_b.T)

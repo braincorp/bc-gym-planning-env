@@ -7,16 +7,19 @@ import attr
 import copy
 import numpy as np
 from bc_gym_planning_env.robot_models.tricycle_model import TricycleRobot
-
 from bc_gym_planning_env.robot_models.robot_dimensions_examples import get_dimensions_example
+from bc_gym_planning_env.robot_models.robot_examples_factory import create_standard_robot
 from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
+from bc_gym_planning_env.utilities.serialize import Serializable
 from bc_gym_planning_env.utilities.costmap_utils import clone_costmap
 from bc_gym_planning_env.utilities.coordinate_transformations import world_to_pixel
-from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint, find_last_reached
+from bc_gym_planning_env.utilities.path_tools import get_pixel_footprint
 from bc_gym_planning_env.utilities.path_tools import refine_path
 from bc_gym_planning_env.envs.base.draw import draw_environment
 from bc_gym_planning_env.envs.base.obs import Observation
+from bc_gym_planning_env.envs.base.params import EnvParams
 from bc_gym_planning_env.envs.base import spaces
+from bc_gym_planning_env.envs.base.reward import ContinuousRewardProvider, ContinuousRewardProviderState
 from bc_gym_planning_env.envs.base.reward import get_reward_provider_example
 from bc_gym_planning_env.utilities.gui import OpenCVGui
 
@@ -46,8 +49,8 @@ def _get_element_from_list_with_delay(item_list, element, delay):
         return item_list[0]
 
 
-@attr.s
-class State(object):
+@attr.s(cmp=False)
+class State(Serializable):
     """ State of the environemnt that you can reset your environment to.
     However, it doesn't contain parametrization. """
     reward_provider_state = attr.ib(type=object)
@@ -64,10 +67,13 @@ class State(object):
     pose = attr.ib(type=np.ndarray)
     robot_state = attr.ib(type=object)
 
+    VERSION = 1
+
     def copy(self):
         """ Get the copy of the environment.
         :return State: get the state of the environment
         """
+        # pylint: disable=no-member
         return attr.evolve(
             self,
             reward_provider_state=self.reward_provider_state.copy(),
@@ -80,6 +86,91 @@ class State(object):
             control_queue=copy.deepcopy(self.control_queue),
             robot_state=self.robot_state.copy()
         )
+
+    def __eq__(self, other):
+        # pylint: disable=too-many-return-statements
+        if not isinstance(other, State):
+            return False
+
+        if self.reward_provider_state != other.reward_provider_state:
+            return False
+
+        if (self.path != other.path).any():
+            return False
+
+        if (self.original_path != other.original_path).any():
+            return False
+
+        if self.costmap != other.costmap:
+            return False
+
+        if self.iter_timeout != other.iter_timeout:
+            return False
+
+        if self.current_time != other.current_time:
+            return False
+
+        if self.current_iter != other.current_iter:
+            return False
+
+        if self.robot_collided != other.robot_collided:
+            return False
+
+        if self.poses_queue != other.poses_queue:
+            return False
+
+        if self.robot_state_queue != other.robot_state_queue:
+            return False
+
+        if self.control_queue != other.control_queue:
+            return False
+
+        if (self.pose != other.pose).any():
+            return False
+
+        if self.robot_state != other.robot_state:
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    @classmethod
+    def deserialize(cls, state):
+
+        ver = state.pop('version')
+        assert ver == cls.VERSION
+
+        state['costmap'] = CostMap2D.from_state(state['costmap'])
+        state['reward_provider_state'] = ContinuousRewardProviderState.deserialize(state['reward_provider_state'])
+
+        # prepare for robot state deserialization
+        robot_instance = create_standard_robot(state.pop('robot_type_name'))
+        robot_state_type = robot_instance.get_state_type()
+
+        # deserialize the robot state
+        state['robot_state'] = robot_state_type.deserialize(state['robot_state'])
+
+        # deserialize robot state queue
+        acc = []
+        for item in state['robot_state_queue']:
+            acc.append(robot_state_type.deserialize(item))
+        state['robot_state_queue'] = acc
+
+        return cls(**state)
+
+    def serialize(self):
+        resu = attr.asdict(self)
+
+        # pylint: disable=no-member
+        resu['version'] = self.VERSION
+        resu['costmap'] = self.costmap.get_state()
+        resu['reward_provider_state'] = self.reward_provider_state.serialize()
+        resu['robot_type_name'] = self.robot_state.get_robot_type_name()
+        resu['robot_state'] = self.robot_state.serialize()
+
+        return resu
 
 
 def make_initial_state(path, costmap, robot, reward_provider, params):
@@ -114,19 +205,18 @@ def make_initial_state(path, costmap, robot, reward_provider, params):
         pose=initial_pose,
         poses_queue=[],
         robot_state=robot_state,
-        robot_state_queue=[robot_state],
+        robot_state_queue=[],
         control_queue=[],
     )
 
 
-class PlanEnv(object):
+class PlanEnv(Serializable):
     """ Poses planning problem as OpenAI gym task. """
-    def __init__(self, costmap, path, params, random_param=None):
+    def __init__(self, costmap, path, params):
         """
         :param costmap CostMap2D: costmap denoting obstacles
         :param path array(N, 3): oriented path, presented as way points
         :param params EnvParams: parametrization of the environment
-        :param random_param RandomizationParams: parametrization of randomization
         """
         # Stateful things
         self._robot = TricycleRobot(dimensions=get_dimensions_example(params.robot_name))
@@ -139,15 +229,38 @@ class PlanEnv(object):
         self._gui = OpenCVGui()
         self._params = params
 
-        # Add randomization
-        if random_param is not None:
-            path = _randomize(params.reward_provider_params, random_param, self._robot, costmap, path)
-
         # State
         self._state = make_initial_state(path, costmap, self._robot, self._reward_provider, params)
-        self._initial_state = copy.deepcopy(self._state)
+        self._initial_state = self._state.copy()
 
         self.set_state(self._state)
+
+    def serialize(self):
+
+        serialized = {
+            'version': self.VERSION,
+            'state': self._state.serialize(),
+            'params': self._params.serialize(),
+            'path': self._state.original_path,
+            'costmap': self._state.costmap.get_state()
+        }
+
+        return serialized
+
+    @classmethod
+    def deserialize(cls, state):
+
+        ver = state.pop('version')
+        assert ver == cls.VERSION
+
+        init_costmap = CostMap2D.from_state(state['costmap'])
+        init_path = state['path']
+        params = EnvParams.deserialize(state['params'])
+        state = State.deserialize(state['state'])
+        instance = cls(init_costmap, init_path, params)
+        instance.set_state(state)
+
+        return instance
 
     def set_state(self, state):
         """ Set the state of the environment
@@ -312,34 +425,6 @@ class PlanEnv(object):
         return {}
 
 
-def _randomize(reward_params, random_param, robot, costmap, path):
-    """
-    Randomize some attributes of the environment
-    # TODO: add more attributes
-    :param reward_params RewardParams: parametrization of the reward provider
-    :param random_param RandomizationParams: parametrization of randomization
-    :param robot: robot - we will execute the motion based on its model
-    :param costmap: the static costmap containing all the obstacles
-    :param path np.ndarray: the path to be randomized
-    :return np.ndarray: randomized path
-    """
-    rng = np.random.RandomState(seed=random_param.seed)
-    randomized_path = path.copy()
-    if random_param.start_pose_covariance is not None:
-        # Re-sample if start pose collides or it's too close to the goal
-        while True:
-            initial_pose = path[0] + rng.multivariate_normal([0.0, 0.0, 0.0], random_param.start_pose_covariance)
-            last_reached_idx = find_last_reached(initial_pose, path,
-                                                 reward_params.spatial_precision, reward_params.angular_precision)
-            collision = _pose_collides(initial_pose[0], initial_pose[1], initial_pose[2], robot, costmap)
-            if not collision and last_reached_idx != len(path) - 1:
-                randomized_path[0] = initial_pose
-                break
-    # TODO: Other randomization
-
-    return randomized_path
-
-
 def _env_step(costmap, robot, dt, control_signals):
     """
     Execute movement step for the robot.
@@ -349,19 +434,20 @@ def _env_step(costmap, robot, dt, control_signals):
     :param control_signals: motion primitives to executed
     :return bool: Does it collide?
     """
+
     old_position = robot.get_pose()
     robot.step(dt, control_signals)
     new_position = robot.get_pose()
 
     x, y, angle = new_position
-    collides = _pose_collides(x, y, angle, robot, costmap)
+    collides = pose_collides(x, y, angle, robot, costmap)
     if collides:
         robot.set_pose(*old_position)
 
     return collides
 
 
-def _pose_collides(x, y, angle, robot, costmap):
+def pose_collides(x, y, angle, robot, costmap):
     """
     Check if robot footprint at x, y (world coordinates) and
         oriented as yaw collides with lethal obstacles.
@@ -372,9 +458,7 @@ def _pose_collides(x, y, angle, robot, costmap):
     :param costmap Costmap2D: costmap containing the obstacles to collide with
     :return bool : does the pose collide?
     """
-    kernel_image = get_pixel_footprint(angle,
-                                       robot.get_footprint() * robot.get_footprint_scale(),
-                                       costmap.get_resolution())
+    kernel_image = get_pixel_footprint(angle, robot.get_footprint(), costmap.get_resolution())
     # Get the coordinates of where the footprint is inside the kernel_image (on pixel coordinates)
     kernel = np.where(kernel_image)
     # Move footprint to (x,y), all in pixel coordinates

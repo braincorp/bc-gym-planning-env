@@ -6,11 +6,16 @@ from __future__ import division
 import numpy as np
 import attr
 
+from bc_gym_planning_env.robot_models.robot_dimensions_interface import IDimensions
+from bc_gym_planning_env.robot_models.robot_dimensions_examples import get_dimensions_example
+from bc_gym_planning_env.robot_models.robot_dimensions_examples import StandardRobotExamples
 from bc_gym_planning_env.utilities.coordinate_transformations import normalize_angle
 from bc_gym_planning_env.robot_models.robot_interface import IRobot
 from bc_gym_planning_env.robot_models.robot_drive_types import RobotDriveTypes
-from bc_gym_planning_env.utilities.map_drawing_utils import get_pixel_footprint_for_drawing, get_physical_angle_from_drawing
+from bc_gym_planning_env.utilities.map_drawing_utils import get_pixel_footprint_for_drawing
+from bc_gym_planning_env.utilities.map_drawing_utils import get_physical_angle_from_drawing
 from bc_gym_planning_env.utilities.path_tools import draw_arrow, blit, path_velocity
+from bc_gym_planning_env.utilities.serialize import Serializable
 
 
 def kinematic_body_pose_motion_step(pose, linear_velocity, angular_velocity, dt):
@@ -70,14 +75,16 @@ def kinematic_body_pose_motion_step_with_noise(pose, linear_velocity, angular_ve
 
 
 @attr.s
-class DiffdriveRobotState(object):
+class DiffdriveRobotState(Serializable):
     """ State of the diffdrive robot. """
-    x = attr.ib(default=0.0, type=float)
-    y = attr.ib(default=0.0, type=float)
-    angle = attr.ib(default=0.0, type=float)
+    VERSION = 1
+    robot_type_name = StandardRobotExamples.INDUSTRIAL_DIFFDRIVE_V1
 
-    v = attr.ib(default=0.0, type=float)
-    w = attr.ib(default=0.0, type=float)
+    x = attr.ib(default=0.0, type=float)       # x coordinate of the robot's state
+    y = attr.ib(default=0.0, type=float)       # y coordinate of the robot's state
+    angle = attr.ib(default=0.0, type=float)   # heading angle of the robot
+    v = attr.ib(default=0.0, type=float)       # linear speed of the robot
+    w = attr.ib(default=0.0, type=float)       # angular speed of the robot
 
     def copy(self):
         """ Return the copy of the state
@@ -103,25 +110,57 @@ class DiffdriveRobotState(object):
         """
         return np.array([self.x, self.y, self.angle, self.v, self.w], dtype=np.float64)
 
+    def get_robot_type_name(self):
+        """ Get the type (string describing the type) of robot type.
+        :return StandardRobotExamples: enum member defining type of robots type
+        """
+        return self.robot_type_name
 
-class DiffDriveRobot(IRobot):
+
+@attr.s
+class DiffDriveRobot(IRobot, Serializable):
     """
     A robot running off a "differential drive".
     i.e. Steering is done by changing the motor signals to the wheels.
     """
+    VERSION = 1
+    _dimensions = attr.ib(type=IDimensions)
+    _footprint_scale = attr.ib(type=float, default=1.0)
+    _noise_parameters = attr.ib(type=dict, default=None)
+    _state = attr.ib(factory=DiffdriveRobotState)
 
-    def __init__(self, dimensions, footprint_scale=1.0):
+    @classmethod
+    def deserialize(cls, state):
+        """ Deserialize the object from the dict of basic types.
+        :param state dict: dict (serialized) representation of the object
+        :return DiffDriveRobot: the deserialized object
         """
-        :param dimensions IDimensions: robot dimensions object
-        :param footprint_scale: a factor to make the footprint smaller or bigger than the actual
-        """
-        self._noise_parameters = None
-        self._state = DiffdriveRobotState()
+        ver = state.pop('version')
+        assert ver == cls.VERSION
+        state['state'] = DiffdriveRobotState.deserialize(state['state'])
+        state['dimensions'] = get_dimensions_example((state['dimensions']))
+        return cls(**state)
 
-        self._footprint_scale = footprint_scale
-        self._dimensions = dimensions
+    def serialize(self):
+        """ Serialize object to dict of basic types: int, np.ndarray, etc.
+        :return dict: dict (serialized) representation of the object
+        """
+        resu = attr.asdict(self)
+        resu['version'] = self.VERSION
+        resu['dimensions'] = self._dimensions.get_name()
+        resu['state'] = self._state.serialize()
+        return resu
+
+    def get_state_type(self):
+        """ Get the type of the state.
+        :return type: type of the robot's state
+        """
+        return type(self.get_initial_state())
 
     def get_initial_state(self):
+        """ Get initial state of the robot
+        :return DiffdriveRobotState: default initial state of the robot
+        """
         return DiffdriveRobotState()
 
     def set_state(self, state):
@@ -138,10 +177,16 @@ class DiffDriveRobot(IRobot):
         return self._state.copy()
 
     def get_drive_type(self):
+        """ Get the type (string describing the type) of robot drive type.
+        :return RobotDriveTypes: enum member defining type of robots drive type
+        """
         return RobotDriveTypes.DIFF
 
     def get_footprint(self):
-        return self._dimensions.footprint()*self._footprint_scale
+        """ Get scaled footprint of the robot.
+        :return np.ndarray: appropriately scaled footprint of the robot.
+        """
+        return self._dimensions.footprint() * self._footprint_scale
 
     def get_dimensions(self):
         """ Get dimensions of the robot
@@ -244,4 +289,7 @@ class DiffDriveRobot(IRobot):
         self._noise_parameters = noise_parameters
 
     def get_robot_type_name(self):
+        """ Get the type (string describing the type) of robot type.
+        :return StandardRobotExamples: enum member defining type of robots type
+        """
         return self._dimensions.get_name()

@@ -12,7 +12,7 @@ from bc_gym_planning_env.robot_models.tricycle_model import TricycleRobot
 from bc_gym_planning_env.robot_models.robot_dimensions_examples import get_dimensions_example
 from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
 from bc_gym_planning_env.envs.base.maps import Wall
-from bc_gym_planning_env.envs.base.env import PlanEnv, _pose_collides
+from bc_gym_planning_env.envs.base.env import PlanEnv, pose_collides
 from bc_gym_planning_env.envs.base.params import EnvParams
 from bc_gym_planning_env.utilities.coordinate_transformations import angle_diff, cart2pol, pol2cart, \
     normalize_angle
@@ -342,10 +342,10 @@ def _sample_mini_env_params(gen_params, rng):
         robot.set_front_wheel_angle(gen_params.env_params.initial_wheel_angle)
 
         x, y, angle = static_path[0]
-        first_pose_collides = _pose_collides(x, y, angle, robot, costmap)
+        first_pose_collides = pose_collides(x, y, angle, robot, costmap)
 
         x, y, angle = static_path[1]
-        second_pose_collides = _pose_collides(x, y, angle, robot, costmap)
+        second_pose_collides = pose_collides(x, y, angle, robot, costmap)
 
         collides = first_pose_collides or second_pose_collides
 
