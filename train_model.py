@@ -162,8 +162,7 @@ def record_take(model, env_instance, device, debug=False):
             actions = model.step(observation_tensor)['actions'].to(device)[0]
         else:
             raise NotImplementedError
-        action_class = Action(command=np.array([actions.cpu().numpy()]))
-        action_class.processed_command()
+        action_class = Action(command=actions.cpu().numpy())
         observation, reward, done, epinfo = env_instance.step(action_class)
         steps += 1
         rewards += reward

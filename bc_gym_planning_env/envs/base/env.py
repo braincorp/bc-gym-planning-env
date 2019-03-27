@@ -134,7 +134,10 @@ class PlanEnv(object):
         self._reward_provider = reward_provider_example(params=params.reward_provider_params)
 
         # Properties, things without state
-        self.action_space = spaces.Discrete(11)
+        self.action_space = spaces.Box(
+            low=np.array([-self._robot.get_max_front_wheel_speed() / 2, -np.pi/2]),
+            high=np.array([self._robot.get_max_front_wheel_speed(), np.pi/2]),
+            dtype=np.float32)
         self.reward_range = (0.0, 1.0)
         self._gui = OpenCVGui()
         self._params = params
