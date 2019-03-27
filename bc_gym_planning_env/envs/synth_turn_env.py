@@ -402,7 +402,7 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         data_shape = (pixel_size[1], pixel_size[0], 1)
         self.observation_space = spaces.Dict(OrderedDict((
             ('environment', spaces.Box(low=0, high=255, shape=data_shape, dtype=np.uint8)),
-            ('goal', spaces.Box(low=-1., high=1., shape=(2, 1), dtype=np.float64))
+            ('goal', spaces.Box(low=-1., high=1., shape=(5, 1), dtype=np.float64))
         )))
 
     def _extract_egocentric_observation(self, rich_observation):
@@ -424,8 +424,12 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         obs = np.expand_dims(ego_costmap.get_data(), -1)
         normalized_goal = ego_path[-1, :2] / ego_costmap.world_size()
         normalized_goal = normalized_goal / np.linalg.norm(normalized_goal)
+
+        robot_state = rich_observation.robot_state.to_numpy_array()
+        goal_n_state = np.hstack([normalized_goal, robot_state[3:]])
+
         return OrderedDict((('environment', obs),
-                            ('goal', np.expand_dims(normalized_goal, -1))))
+                            ('goal', np.expand_dims(goal_n_state, -1))))
 
     def step(self, action):
         """
