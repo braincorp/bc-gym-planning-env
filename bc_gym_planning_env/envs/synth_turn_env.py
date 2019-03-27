@@ -321,15 +321,26 @@ class RandomAisleTurnEnv(object):
 
         :return TurnParams: Random turn params
         """
+        # return TurnParams(
+        #     main_corridor_length=self._rng.uniform(10, 16),
+        #     turn_corridor_length=self._rng.uniform(4, 12),
+        #     turn_corridor_angle=self._rng.uniform(-3./8. * np.pi, 3./8.*np.pi),
+        #     main_corridor_width=self._rng.uniform(1.0, 1.5),
+        #     turn_corridor_width=self._rng.uniform(1.0, 1.5),
+        #     flip_arnd_oy=bool(self._rng.rand() < 0.5),
+        #     flip_arnd_ox=bool(self._rng.rand() < 0.5),
+        #     rot_theta=self._rng.uniform(0, 2*np.pi)
+        # )
+
         return TurnParams(
-            main_corridor_length=self._rng.uniform(10, 16),
-            turn_corridor_length=self._rng.uniform(4, 12),
-            turn_corridor_angle=self._rng.uniform(-3./8. * np.pi, 3./8.*np.pi),
-            main_corridor_width=self._rng.uniform(1.0, 1.5),
-            turn_corridor_width=self._rng.uniform(1.0, 1.5),
-            flip_arnd_oy=bool(self._rng.rand() < 0.5),
-            flip_arnd_ox=bool(self._rng.rand() < 0.5),
-            rot_theta=self._rng.uniform(0, 2*np.pi)
+            main_corridor_length=6,
+            turn_corridor_length=4,
+            turn_corridor_angle=2. / 8. * np.pi,
+            main_corridor_width=1.0,
+            turn_corridor_width=1.0,
+            flip_arnd_oy=False,
+            flip_arnd_ox=False,
+            rot_theta=0.
         )
 
 
