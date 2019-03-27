@@ -19,8 +19,8 @@ from bc_gym_planning_env.envs.base.draw import draw_environment
 from bc_gym_planning_env.envs.base.obs import Observation
 from bc_gym_planning_env.envs.base.params import EnvParams
 from bc_gym_planning_env.envs.base import spaces
-from bc_gym_planning_env.envs.base.reward import ContinuousRewardProvider, ContinuousRewardProviderState
-from bc_gym_planning_env.envs.base.reward import generate_initial_state
+from bc_gym_planning_env.envs.base.reward_provider_examples_factory import\
+    create_reward_provider_state, get_reward_provider_example
 from bc_gym_planning_env.utilities.gui import OpenCVGui
 
 
@@ -143,7 +143,9 @@ class State(Serializable):
         assert ver == cls.VERSION
 
         state['costmap'] = CostMap2D.from_state(state['costmap'])
-        state['reward_provider_state'] = ContinuousRewardProviderState.deserialize(state['reward_provider_state'])
+
+        reward_provider_state_instance = create_reward_provider_state(state.pop('reward_provider_state_name'))
+        state['reward_provider_state'] = reward_provider_state_instance.deserialize(state['reward_provider_state'])
 
         # prepare for robot state deserialization
         robot_instance = create_standard_robot(state.pop('robot_type_name'))
@@ -166,6 +168,7 @@ class State(Serializable):
         # pylint: disable=no-member
         resu['version'] = self.VERSION
         resu['costmap'] = self.costmap.get_state()
+        resu['reward_provider_state_type_name'] = self.reward_provider_state.get_reward_provider_state_type_name()
         resu['reward_provider_state'] = self.reward_provider_state.serialize()
         resu['robot_type_name'] = self.robot_state.get_robot_type_name()
         resu['robot_state'] = self.robot_state.serialize()
@@ -173,11 +176,12 @@ class State(Serializable):
         return resu
 
 
-def make_initial_state(path, costmap, robot, params):
+def make_initial_state(path, costmap, robot, reward_provider, params):
     """ Prepare the initial full state of the planning environment
     :param path: the static path to follow
     :param costmap: the static costmap containg all the obstacles
     :param robot: robot - we will execute the motion based on its model
+    :param reward_provider: an instance of the reward computing class
     :param params: parametriztion of the environment
     :return State: the full initial state of the environment
     """
@@ -193,7 +197,7 @@ def make_initial_state(path, costmap, robot, params):
     robot_state.set_pose(initial_pose)
 
     return State(
-        reward_provider_state=generate_initial_state(path, params.reward_provider_params),
+        reward_provider_state=reward_provider.generate_initial_state(path, params.reward_provider_params),
         path=np.ascontiguousarray(path),
         original_path=np.copy(np.ascontiguousarray(path)),
         costmap=costmap,
@@ -219,7 +223,8 @@ class PlanEnv(Serializable):
         """
         # Stateful things
         self._robot = TricycleRobot(dimensions=get_dimensions_example(params.robot_name))
-        self._reward_provider = ContinuousRewardProvider(params=params.reward_provider_params)
+        reward_provider_example = get_reward_provider_example(params.reward_provider_name)
+        self._reward_provider = reward_provider_example(params=params.reward_provider_params)
 
         # Properties, things without state
         self.action_space = spaces.Box(
@@ -231,7 +236,7 @@ class PlanEnv(Serializable):
         self._params = params
 
         # State
-        self._state = make_initial_state(path, costmap, self._robot, params)
+        self._state = make_initial_state(path, costmap, self._robot, self._reward_provider, params)
         self._initial_state = self._state.copy()
 
         self.set_state(self._state)
@@ -337,10 +342,10 @@ class PlanEnv(Serializable):
         # Process the environment dynamics
         self._state = self._resolve_state_transition(action, self._state)
 
-        obs = self._extract_obs()
         reward = self._reward_provider.reward(self._state)
+        obs = self._extract_obs()
         info = self._extract_info()
-        done = self._extract_done()
+        done = self._extract_done(self._state)
 
         self._state.reward_provider_state = self._reward_provider.get_state()
         self._state.path = self._reward_provider.get_current_path()
@@ -391,14 +396,15 @@ class PlanEnv(Serializable):
         """
         return self._state.current_iter >= self._params.iteration_timeout
 
-    def _extract_done(self):
+    def _extract_done(self, state):
         """
         Extract if we are done with this enviroment.
         For example we are done, if the goal has been reached,
         we have timed out or the robot has collided.
+        :param state: current state of the environment
         :return bool: are we done with this planning environment?
         """
-        goal_reached = self._reward_provider.done()
+        goal_reached = self._reward_provider.done(state)
         timed_out = self._has_timed_out()
         done = goal_reached or timed_out or self._state.robot_collided
 
