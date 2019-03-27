@@ -5,36 +5,12 @@ import attr
 import numpy as np
 
 from bc_gym_planning_env.utilities.path_tools import pose_distances, find_last_reached
+from bc_gym_planning_env.utilities.serialize import Serializable
+from bc_gym_planning_env.envs.base.reward_provider_examples import RewardProviderStateExamples
 
 
-class RewardProviderExamples:
-    """ Names of reward provider"""
-    CONTINUOUS_REWARD = 'continuous_reward'
-    CONTINUOUS_REWARD_PURE_PURSUIT = 'continuous_reward_pure_pursuit'
-
-
-def get_reward_provider_example(reward_provider_name):
-    """
-    Get class corresponding to reward_provider_name
-
-    :param reward_provider_name: reward provider name string (see below for valid inputs)
-    :return reward provider instance: an instance of a particular type of reward
-    """
-    name_to_reward_provider = \
-        {RewardProviderExamples.CONTINUOUS_REWARD: ContinuousRewardProvider,
-         RewardProviderExamples.CONTINUOUS_REWARD_PURE_PURSUIT: ContinuousRewardPurePursuitProvider}
-
-    valid_reward_provider_types = list(name_to_reward_provider.keys())
-
-    if reward_provider_name not in valid_reward_provider_types:
-        raise AssertionError("Unknown reward provider: {}. Should be one of {}".format(reward_provider_name,
-                                                                                       valid_reward_provider_types))
-
-    return name_to_reward_provider[reward_provider_name]
-
-
-@attr.s
-class ContinuousRewardProviderState(object):
+@attr.s(cmp=False)
+class ContinuousRewardProviderState(Serializable):
     """ State of the continuous reward provider: """
     # How much progress has the agent done towards current goal pose
     min_spat_dist_so_far = attr.ib(type=float)
@@ -42,6 +18,27 @@ class ContinuousRewardProviderState(object):
     path = attr.ib(type=np.ndarray)
     # idx of current goal pose along the static path
     target_idx = attr.ib(type=int)
+
+    VERSION = 1
+    reward_provider_state_type_name = RewardProviderStateExamples.CONTINUOUS_REWARD_STATE
+
+    def __eq__(self, other):
+        if not isinstance(other, ContinuousRewardProviderState):
+            return False
+
+        if (self.path != other.path).any():
+            return False
+
+        if self.min_spat_dist_so_far != other.min_spat_dist_so_far:
+            return False
+
+        if self.target_idx != other.target_idx:
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def copy(self):
         """ Get a copy of the reward provider's state
@@ -53,6 +50,7 @@ class ContinuousRewardProviderState(object):
         """ Get the current goal pose
         :return np.ndarray(3): The current goal pose
         """
+        # pylint: disable=unsubscriptable-object
         if self.target_idx < len(self.path):
             return self.path[self.target_idx]
         else:
@@ -62,6 +60,7 @@ class ContinuousRewardProviderState(object):
         """ Get the current path
         :return np.ndarray(N, 3): the piece of static path left to follow
         """
+        # pylint: disable=invalid-slice-index,unsubscriptable-object
         return self.path[self.target_idx:]
 
     def done(self):
@@ -69,9 +68,15 @@ class ContinuousRewardProviderState(object):
         :return bool: True if we are done with this environment. """
         return self.target_idx > len(self.path) - 1
 
+    def get_reward_provider_state_type_name(self):
+        """ Get the type (string describing the type) of reward provider state type.
+        :return RewardProviderStateExamples: enum member defining type of reward provider state type
+        """
+        return self.reward_provider_state_type_name
 
-@attr.s
-class ContinuousRewardPurePursuitProviderState(object):
+
+@attr.s(cmp=False)
+class ContinuousRewardPurePursuitProviderState(Serializable):
     """ State of the continuous reward provider: """
     # How much progress has the agent done towards current goal pose
     min_spat_dist_so_far = attr.ib(type=float)
@@ -79,6 +84,27 @@ class ContinuousRewardPurePursuitProviderState(object):
     path = attr.ib(type=np.ndarray)
     # idx of current goal pose along the static path
     target_idx = attr.ib(type=int, default=0)
+
+    VERSION = 1
+    reward_provider_state_type_name = RewardProviderStateExamples.CONTINUOUS_REWARD_PURE_PURSUIT_STATE
+
+    def __eq__(self, other):
+        if not isinstance(other, ContinuousRewardProviderState):
+            return False
+
+        if (self.path != other.path).any():
+            return False
+
+        if self.min_spat_dist_so_far != other.min_spat_dist_so_far:
+            return False
+
+        if self.target_idx != other.target_idx:
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def copy(self):
         """ Get a copy of the reward provider's state
@@ -90,12 +116,14 @@ class ContinuousRewardPurePursuitProviderState(object):
         """ Get the current goal pose
         :return np.ndarray(3): The current goal pose
         """
+        # pylint: disable=unsubscriptable-object
         return self.path[-1]
 
     def current_path(self):
         """ Get the current path
         :return np.ndarray(N, 3): the piece of static path left to follow
         """
+        # pylint: disable=unsubscriptable-object
         return self.path[:self.target_idx+1]
 
     def update_goal(self, pose, radius=2.):
@@ -105,6 +133,7 @@ class ContinuousRewardPurePursuitProviderState(object):
         :param radius: the distance between the robot and the target waypoint
         :return: the updated target waypoint's index on the path
         """
+        # pylint: disable=unsubscriptable-object
         for i in range(self.target_idx, len(self.path)):
             if np.linalg.norm(self.path[i, :2] - pose[:2]) > radius:
                 self.target_idx = i
@@ -123,10 +152,17 @@ class ContinuousRewardPurePursuitProviderState(object):
 
         return goal_reached
 
+    def get_reward_provider_state_type_name(self):
+        """ Get the type (string describing the type) of reward provider state type.
+        :return RewardProviderStateExamples: enum member defining type of reward provider state type
+        """
+        return self.reward_provider_state_type_name
+
 
 @attr.s
-class RewardParams(object):
+class RewardParams(Serializable):
     """ Parametrization of the continuous reward provider"""
+    VERSION = 1
     # How close spatially do you have to be to count the goal as reached
     spatial_precision = attr.ib(type=float)
     # How close angularly do you have to be to count the goal as reached

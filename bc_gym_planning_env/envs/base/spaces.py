@@ -4,16 +4,19 @@ from collections import OrderedDict
 import numpy as np
 
 from bc_gym_planning_env.envs.base.action import Action
+from bc_gym_planning_env.utilities.serialize import Serializable
 
 SPACE_LOCAL_RANDOM_STATE = np.random.RandomState()
 SPACE_LOCAL_RANDOM_STATE.seed(0)
 
 
-class Space(object):
+class Space(Serializable):
     """Defines the observation and action spaces, so you can write generic
     code that applies to any Env. For example, you can choose a random
     action.
     """
+    VERSION = 1
+
     def __init__(self, shape=None, dtype=None):
         """
         Initialize Space
@@ -21,7 +24,18 @@ class Space(object):
         :param dtype: dtype of the space
         """
         self.shape = None if shape is None else tuple(shape)
-        self.dtype = None if dtype is None else np.dtype(dtype)
+        self.dtype = dtype
+
+    @staticmethod
+    def _get_type_mapping():
+        """ Get a dict mapping from name of space to type of the space.
+        :return Dict[str, type]: a dict mapping from name of space to type of the space.
+        """
+        return {
+            Box.SPACE_NAME: Box,
+            Dict.SPACE_NAME: Dict,
+            Discrete.SPACE_NAME: Discrete
+        }
 
     def sample(self):
         """
@@ -61,6 +75,15 @@ class Space(object):
         """
         return sample_n
 
+    def serialize(self):
+        raise NotImplementedError("Should be implemented by children action spaces")
+
+    @classmethod
+    def deserialize(cls, state):
+        name = state.pop()
+        subclass = cls._get_type_mapping()[name]
+        return subclass(**state)
+
 
 class Box(Space):
     """
@@ -70,6 +93,8 @@ class Box(Space):
     Example usage:
     self.action_space = spaces.Box(low=-10, high=10, shape=(1,))
     """
+    SPACE_NAME = 'Box'
+
     def __init__(self, low=None, high=None, shape=None, dtype=None):
         """
         Two kinds of valid input:
@@ -90,17 +115,26 @@ class Box(Space):
             high = high + np.zeros(shape)
         if dtype is None:  # Autodetect type
             if (high == 255).all():
-                dtype = np.uint8
+                dtype = 'uint8'
             else:
-                dtype = np.float32
+                dtype = 'float32'
         self.low = low.astype(dtype)
         self.high = high.astype(dtype)
         Space.__init__(self, shape, dtype)
 
+    def serialize(self):
+        return dict(
+            name=Box.SPACE_NAME,
+            low=self.low,
+            high=self.high,
+            shape=self.shape,
+            dtype=self.dtype
+        )
+
     def sample(self):
         v, w = SPACE_LOCAL_RANDOM_STATE.uniform(
             low=self.low,
-            high=self.high + (0 if self.dtype.kind == 'f' else 1),
+            high=self.high + (0 if np.dtype(self.dtype).kind == 'f' else 1),
             size=self.low.shape
         ).astype(self.dtype)
 
@@ -151,6 +185,8 @@ class Dict(Space):
         })
     })
     """
+    SPACE_NAME = 'Dict'
+
     def __init__(self, spaces=None, **spaces_kwargs):
         """ Initialize Dict space
         :param spaces: input spaces
@@ -168,6 +204,9 @@ class Dict(Space):
 
     def sample(self):
         return OrderedDict([(k, space.sample()) for k, space in self.spaces.items()])
+
+    def serialize(self):
+        raise NotImplementedError
 
     def contains(self, x):
         if not isinstance(x, dict) or len(x) != len(self.spaces):
@@ -214,6 +253,8 @@ class Discrete(Space):
     Example usage:
     self.observation_space = spaces.Discrete(2)
     """
+    SPACE_NAME = 'Discrete'
+
     def __init__(self, n):
         """
         Initialize Space
@@ -221,6 +262,14 @@ class Discrete(Space):
         """
         self.n = n
         Space.__init__(self, (), np.int64)
+
+    def serialize(self):
+        return dict(
+            name=Discrete.SPACE_NAME,
+            n=self.n,
+            shape=None,
+            dtype='uint8'
+        )
 
     def sample(self):
         return np.random.randint(self.n)
