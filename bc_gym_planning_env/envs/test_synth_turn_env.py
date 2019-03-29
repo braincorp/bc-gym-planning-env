@@ -55,7 +55,7 @@ def record_new_ground_truth_1():
     ground_truth = []
     env = ColoredEgoCostmapRandomAisleTurnEnv()
     env.reset()
-    for _ in range(10000):
+    for _ in range(100):
         action = env.action_space.sample()
         observation, reward, done, _ = env.step(action)
         ground_truth.append({'action': action,
@@ -74,7 +74,7 @@ def record_new_ground_truth_2():
     ground_truth = []
     env = ColoredCostmapRandomAisleTurnEnv()
     env.reset()
-    for _ in range(10000):
+    for _ in range(100):
         action = env.action_space.sample()
         observation, reward, done, _ = env.step(action)
         ground_truth.append({'action': action,
