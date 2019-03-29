@@ -360,7 +360,7 @@ class ContinuousRewardPurePursuitProvider(object):
         """
         initial_pose = path[0]
 
-        target_idx = 0
+        target_idx = 1
         goal_pose = path[-1]
         dist_to_goal, _ = pose_distances(goal_pose, initial_pose)
 
