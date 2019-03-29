@@ -12,6 +12,8 @@ from bc_gym_planning_env.envs.synth_turn_env import ColoredEgoCostmapRandomAisle
 
 @pytest.mark.skipif(True, reason="waiting for after serialization to merge first")
 def test_colored_ego_costmap_random_aisle_turn_env():
+    # TODO: add code here to download from AWS
+
     with open('ground_truth_1.pkl', 'rb') as f:
         ground_truth = pickle.load(f)
     env = ColoredEgoCostmapRandomAisleTurnEnv()
@@ -31,6 +33,8 @@ def test_colored_ego_costmap_random_aisle_turn_env():
 
 @pytest.mark.skipif(True, reason="waiting for after serialization to merge first")
 def test_colored_costmap_random_aisle_turn_env():
+    # TODO: add code here to download from AWS
+
     with open('ground_truth_2.pkl', 'rb') as f:
         ground_truth = pickle.load(f)
     env = ColoredCostmapRandomAisleTurnEnv()
@@ -58,6 +62,9 @@ def record_new_ground_truth_1():
                              'observation': observation,
                              'reward': reward,
                              'done': done})
+        if done:
+            env.reset()
+
     with open('ground_truth_1.pkl', 'wb') as f:
         pickle.dump(ground_truth, f, pickle.HIGHEST_PROTOCOL)
     # TODO: add code here to upload this to AWS
@@ -74,6 +81,9 @@ def record_new_ground_truth_2():
                              'observation': observation,
                              'reward': reward,
                              'done': done})
+        if done:
+            env.reset()
+
     with open('ground_truth_2.pkl', 'wb') as f:
         pickle.dump(ground_truth, f, pickle.HIGHEST_PROTOCOL)
     # TODO: add code here to upload this to AWS
