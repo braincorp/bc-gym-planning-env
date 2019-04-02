@@ -5,16 +5,24 @@ from __future__ import division
 import pickle
 import numpy as np
 import pytest
+import requests
 
+from bc_gym_planning_env.utilities.artifacts_utils import get_cache_key_path
 from bc_gym_planning_env.envs.synth_turn_env import ColoredEgoCostmapRandomAisleTurnEnv,\
     ColoredCostmapRandomAisleTurnEnv
 
 
 @pytest.mark.skipif(True, reason="waiting for after serialization to merge first")
 def test_colored_ego_costmap_random_aisle_turn_env():
-    # TODO: add code here to download from AWS
+    session_tar_key = 'test_colored_ego_costmap_random_aisle_turn_env_ground_truth.pkl'
+    session_tar_file = get_cache_key_path(session_tar_key)
+    r = requests.get(
+        'https://s3-us-west-1.amazonaws.com/braincorp-research-public-datasets/' + session_tar_key
+    )
+    with open(session_tar_file, 'wb') as f:
+        f.write(r.content)
 
-    with open('ground_truth_1.pkl', 'rb') as f:
+    with open(session_tar_file, 'rb') as f:
         ground_truth = pickle.load(f)
     env = ColoredEgoCostmapRandomAisleTurnEnv()
     env.reset()
@@ -33,9 +41,15 @@ def test_colored_ego_costmap_random_aisle_turn_env():
 
 @pytest.mark.skipif(True, reason="waiting for after serialization to merge first")
 def test_colored_costmap_random_aisle_turn_env():
-    # TODO: add code here to download from AWS
+    session_tar_key = 'test_colored_costmap_random_aisle_turn_env_ground_truth.pkl'
+    session_tar_file = get_cache_key_path(session_tar_key)
+    r = requests.get(
+        'https://s3-us-west-1.amazonaws.com/braincorp-research-public-datasets/' + session_tar_key
+    )
+    with open(session_tar_file, 'wb') as f:
+        f.write(r.content)
 
-    with open('ground_truth_2.pkl', 'rb') as f:
+    with open(session_tar_file, 'rb') as f:
         ground_truth = pickle.load(f)
     env = ColoredCostmapRandomAisleTurnEnv()
     env.reset()
@@ -51,7 +65,7 @@ def test_colored_costmap_random_aisle_turn_env():
             env.reset()
 
 
-def record_new_ground_truth_1():
+def record_new_ground_truth_for_colored_ego_costmap_random_aisle_turn_env():
     ground_truth = []
     env = ColoredEgoCostmapRandomAisleTurnEnv()
     env.reset()
@@ -65,12 +79,13 @@ def record_new_ground_truth_1():
         if done:
             env.reset()
 
-    with open('ground_truth_1.pkl', 'wb') as f:
+    session_tar_key = 'test_colored_ego_costmap_random_aisle_turn_env_ground_truth.pkl'
+    with open(session_tar_key, 'wb') as f:
         pickle.dump(ground_truth, f, pickle.HIGHEST_PROTOCOL)
     # TODO: add code here to upload this to AWS
 
 
-def record_new_ground_truth_2():
+def record_new_ground_truth_for_colored_costmap_random_aisle_turn_env():
     ground_truth = []
     env = ColoredCostmapRandomAisleTurnEnv()
     env.reset()
@@ -84,7 +99,8 @@ def record_new_ground_truth_2():
         if done:
             env.reset()
 
-    with open('ground_truth_2.pkl', 'wb') as f:
+    session_tar_key = 'test_colored_costmap_random_aisle_turn_env_ground_truth.pkl'
+    with open(session_tar_key, 'wb') as f:
         pickle.dump(ground_truth, f, pickle.HIGHEST_PROTOCOL)
     # TODO: add code here to upload this to AWS
 
@@ -93,5 +109,5 @@ if __name__ == '__main__':
     test_colored_ego_costmap_random_aisle_turn_env()
     test_colored_costmap_random_aisle_turn_env()
 
-    # record_new_ground_truth_1()
-    # record_new_ground_truth_2()
+    # record_new_ground_truth_for_colored_ego_costmap_random_aisle_turn_env()
+    # record_new_ground_truth_for_colored_costmap_random_aisle_turn_env()
