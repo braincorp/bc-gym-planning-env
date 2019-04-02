@@ -4,7 +4,6 @@ from __future__ import division
 
 import pickle
 import numpy as np
-import pytest
 import requests
 
 from bc_gym_planning_env.utilities.artifacts_utils import get_cache_key_path
@@ -80,7 +79,7 @@ def record_new_ground_truth_for_colored_ego_costmap_random_aisle_turn_env():
     session_tar_key = 'test_colored_ego_costmap_random_aisle_turn_env_ground_truth.pkl'
     with open(session_tar_key, 'wb') as f:
         pickle.dump(ground_truth, f, pickle.HIGHEST_PROTOCOL)
-    # TODO: add code here to upload this to AWS
+    # to update ground truth, need to manually upload this file to AWS
 
 
 def record_new_ground_truth_for_colored_costmap_random_aisle_turn_env():
@@ -100,7 +99,7 @@ def record_new_ground_truth_for_colored_costmap_random_aisle_turn_env():
     session_tar_key = 'test_colored_costmap_random_aisle_turn_env_ground_truth.pkl'
     with open(session_tar_key, 'wb') as f:
         pickle.dump(ground_truth, f, pickle.HIGHEST_PROTOCOL)
-    # TODO: add code here to upload this to AWS
+    # to update ground truth, need to manually upload this file to AWS
 
 
 if __name__ == '__main__':
