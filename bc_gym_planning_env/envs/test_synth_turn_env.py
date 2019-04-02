@@ -78,7 +78,7 @@ def record_new_ground_truth_for_colored_ego_costmap_random_aisle_turn_env():
 
     session_tar_key = 'test_colored_ego_costmap_random_aisle_turn_env_ground_truth.pkl'
     with open(session_tar_key, 'wb') as f:
-        pickle.dump(ground_truth, f, pickle.HIGHEST_PROTOCOL)
+        pickle.dump(ground_truth, f, protocol=0)
     # to update ground truth, need to manually upload this file to AWS
 
 
@@ -98,7 +98,7 @@ def record_new_ground_truth_for_colored_costmap_random_aisle_turn_env():
 
     session_tar_key = 'test_colored_costmap_random_aisle_turn_env_ground_truth.pkl'
     with open(session_tar_key, 'wb') as f:
-        pickle.dump(ground_truth, f, pickle.HIGHEST_PROTOCOL)
+        pickle.dump(ground_truth, f, protocol=0)
     # to update ground truth, need to manually upload this file to AWS
 
 
