@@ -12,7 +12,6 @@ from bc_gym_planning_env.envs.synth_turn_env import ColoredEgoCostmapRandomAisle
     ColoredCostmapRandomAisleTurnEnv
 
 
-@pytest.mark.skipif(True, reason="waiting for after serialization to merge first")
 def test_colored_ego_costmap_random_aisle_turn_env():
     session_tar_key = 'test_colored_ego_costmap_random_aisle_turn_env_ground_truth.pkl'
     session_tar_file = get_cache_key_path(session_tar_key)
@@ -39,7 +38,6 @@ def test_colored_ego_costmap_random_aisle_turn_env():
             env.reset()
 
 
-@pytest.mark.skipif(True, reason="waiting for after serialization to merge first")
 def test_colored_costmap_random_aisle_turn_env():
     session_tar_key = 'test_colored_costmap_random_aisle_turn_env_ground_truth.pkl'
     session_tar_file = get_cache_key_path(session_tar_key)
