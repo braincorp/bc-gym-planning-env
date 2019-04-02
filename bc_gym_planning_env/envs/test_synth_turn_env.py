@@ -103,8 +103,8 @@ def record_new_ground_truth_for_colored_costmap_random_aisle_turn_env():
 
 
 if __name__ == '__main__':
-    test_colored_ego_costmap_random_aisle_turn_env()
-    test_colored_costmap_random_aisle_turn_env()
+    # test_colored_ego_costmap_random_aisle_turn_env()
+    # test_colored_costmap_random_aisle_turn_env()
 
-    # record_new_ground_truth_for_colored_ego_costmap_random_aisle_turn_env()
-    # record_new_ground_truth_for_colored_costmap_random_aisle_turn_env()
+    record_new_ground_truth_for_colored_ego_costmap_random_aisle_turn_env()
+    record_new_ground_truth_for_colored_costmap_random_aisle_turn_env()
