@@ -233,7 +233,7 @@ class RandomAisleTurnEnv(object):
         :param rng np.RandomState: random number generator
         """
         if rng is None:
-            self._rng = np.random.RandomState(1001)
+            self._rng = np.random.RandomState()
         else:
             self._rng = rng
 

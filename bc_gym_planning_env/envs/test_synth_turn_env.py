@@ -23,6 +23,7 @@ def test_colored_ego_costmap_random_aisle_turn_env():
     with open(session_tar_file, 'rb') as f:
         ground_truth = pickle.load(f)
     env = ColoredEgoCostmapRandomAisleTurnEnv()
+    env.seed(1001)
     env.reset()
     for step_snapshot in ground_truth:
         action = step_snapshot['action']
@@ -49,6 +50,7 @@ def test_colored_costmap_random_aisle_turn_env():
     with open(session_tar_file, 'rb') as f:
         ground_truth = pickle.load(f)
     env = ColoredCostmapRandomAisleTurnEnv()
+    env.seed(1001)
     env.reset()
     for step_snapshot in ground_truth:
         action = step_snapshot['action']
@@ -65,6 +67,7 @@ def test_colored_costmap_random_aisle_turn_env():
 def record_new_ground_truth_for_colored_ego_costmap_random_aisle_turn_env():
     ground_truth = []
     env = ColoredEgoCostmapRandomAisleTurnEnv()
+    env.seed(1001)
     env.reset()
     for _ in range(100):
         action = env.action_space.sample()
@@ -85,6 +88,7 @@ def record_new_ground_truth_for_colored_ego_costmap_random_aisle_turn_env():
 def record_new_ground_truth_for_colored_costmap_random_aisle_turn_env():
     ground_truth = []
     env = ColoredCostmapRandomAisleTurnEnv()
+    env.seed(1001)
     env.reset()
     for _ in range(100):
         action = env.action_space.sample()
