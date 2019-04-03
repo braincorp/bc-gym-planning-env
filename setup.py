@@ -20,7 +20,9 @@ setup(
     install_requires=['numpy>=1.13.3',
                       'gym',
                       'attrs>=19.1.0',
+                      'vel==0.1.0',
                       'opencv-python'],
+    dependency_links=['git+https://github.com/tigerwlin/vel#egg=v0.1.0'],
     package_data={'': ['input']},
     include_package_data=True,
         extras_require={
