@@ -3,6 +3,7 @@ import cv2
 import torch
 import torch.optim as optim
 import numpy as np
+import pickle
 
 from vel.rl.metrics import EpisodeRewardMetric
 from vel.storage.streaming.stdout import StdoutStreaming
@@ -95,6 +96,7 @@ def train_model():
     num_epochs = int(1.1e8 / (128 * 1) / 10)
 
     # Normal handrolled training loop
+    eval_results = []
     for i in range(1, num_epochs+1):
         epoch_info = EpochInfo(
             training_info=training_info,
@@ -104,9 +106,14 @@ def train_model():
         )
 
         reinforcer.train_epoch(epoch_info)
-        if i % 1000 == 0:
+
+        eval_result = evaluate_model(model, vec_env, device, takes=1)
+        eval_results.append(eval_result)
+
+        if i % 100 == 0:
             torch.save(model.state_dict(), 'tmp_checkout.data')
-        evaluate_model(model, vec_env, device, takes=1)
+            with open('tmp_eval_results.pkl', 'wb') as f:
+                pickle.dump(eval_results, f, 0)
 
     training_info.on_train_end()
 
@@ -136,6 +143,7 @@ def evaluate_model(model, env, device, takes=1, debug=False):
         save_as_video(frames)
     print(pd.DataFrame({'lengths': lengths, 'rewards': rewards}).describe())
     model.train(mode=True)
+    return {'rewards': rewards, 'lengths': lengths}
 
 
 @torch.no_grad()
