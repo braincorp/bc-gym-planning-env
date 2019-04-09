@@ -71,6 +71,7 @@ class ContinuousRewardPurePursuitProviderState(object):
         :return np.ndarray(N, 3): the piece of static path left to follow
         """
         return self.path[:self.target_idx+1]
+        #return self.path
 
     def update_goal(self, pose, radius=2.):
         """

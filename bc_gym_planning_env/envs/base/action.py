@@ -27,8 +27,10 @@ class Action(object):
         if command.shape == (2,):
             self.command = command
         elif command.shape == (1,):
-            # self.command = self._command_dict[command[0]]
+            #self.command = self._command_dict[command[0]]
             self.command = np.array([0.2, command[0]])
+        elif command.shape == ():
+            self.command = self._command_dict[int(command)]
         elif command.shape == (1,1):
             self.command = np.array([0.2, command[0, 0]])
         else:

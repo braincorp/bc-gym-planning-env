@@ -93,7 +93,7 @@ def make_initial_state(path, costmap, robot, reward_provider, params):
     """
 
     if params.refine_path:
-        path = refine_path(path, params.path_delta)
+        path = refine_path(path, params.path_delta, params.path_delta)
 
     assert path.shape[1] == 3
 
@@ -133,10 +133,14 @@ class PlanEnv(object):
         self._reward_provider = ContinuousRewardPurePursuitProvider(params=params.reward_provider_params)
 
         # Properties, things without state
-        # self.action_space = spaces.Discrete(11)
+        #self.action_space = spaces.Discrete(11)
+        #self.action_space = spaces.Box(
+        #    low=np.array([self._robot.get_max_front_wheel_speed() / 2*0.2, -np.pi / 3]),
+        #    high=np.array([self._robot.get_max_front_wheel_speed() / 2, np.pi / 3]),
+        #    dtype=np.float32)
         self.action_space = spaces.Box(
-            low=np.array([self._robot.get_max_front_wheel_speed() / 2*0.2, -np.pi / 3]),
-            high=np.array([self._robot.get_max_front_wheel_speed() / 2, np.pi / 3]),
+            low=np.array([-np.pi / 3]),
+            high=np.array([np.pi / 3]),
             dtype=np.float32)
         self.reward_range = (0.0, 1.0)
         self._gui = OpenCVGui()
@@ -222,6 +226,7 @@ class PlanEnv(object):
         :param action: (wheel_v, wheel_angle)
         :return Tuple[Observation, float, bool, Dict]: the stuff env shuold return
         """
+        #action.command = np.array([0.2, action.command[0]])
 
         # Process the environment dynamics
         self._state = self._resolve_state_transition(action, self._state)
