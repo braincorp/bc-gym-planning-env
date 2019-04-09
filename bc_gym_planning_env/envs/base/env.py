@@ -134,14 +134,14 @@ class PlanEnv(object):
 
         # Properties, things without state
         #self.action_space = spaces.Discrete(11)
-        #self.action_space = spaces.Box(
-        #    low=np.array([self._robot.get_max_front_wheel_speed() / 2*0.2, -np.pi / 3]),
-        #    high=np.array([self._robot.get_max_front_wheel_speed() / 2, np.pi / 3]),
-        #    dtype=np.float32)
         self.action_space = spaces.Box(
-            low=np.array([-np.pi / 3]),
-            high=np.array([np.pi / 3]),
-            dtype=np.float32)
+           low=np.array([self._robot.get_max_front_wheel_speed() / 2*0.2, -np.pi / 3]),
+           high=np.array([self._robot.get_max_front_wheel_speed() / 2, np.pi / 3]),
+           dtype=np.float32)
+        # self.action_space = spaces.Box(
+        #     low=np.array([-np.pi / 3]),
+        #     high=np.array([np.pi / 3]),
+        #     dtype=np.float32)
         self.reward_range = (0.0, 1.0)
         self._gui = OpenCVGui()
         self._params = params
