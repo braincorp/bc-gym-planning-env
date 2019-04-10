@@ -147,7 +147,7 @@ def _mark_wall_on_static_map(static_map, p0, p1, width, color):
     :param width: width of the wall
     :param color: color of the wall on static map
     """
-    thickness = max(4, int(width/static_map.get_resolution()))
+    thickness = max(1, int(width/static_map.get_resolution()))
     cv2.line(
         static_map.get_data(),
         tuple(world_to_pixel(np.array(p0, dtype=np.float64), static_map.get_origin(), static_map.get_resolution())),
