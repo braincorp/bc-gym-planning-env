@@ -6,11 +6,13 @@ import attr
 import numpy as np
 
 from bc_gym_planning_env.robot_models.standard_robot_names_examples import StandardRobotExamples
+from bc_gym_planning_env.utilities.serialize import Serializable
 from bc_gym_planning_env.envs.base.reward import RewardParams
+from bc_gym_planning_env.envs.base.reward_provider_examples import RewardProviderExamples
 
 
 @attr.s(frozen=True)
-class EnvParams(object):
+class EnvParams(Serializable):
     """ Parametrization of the environment.  """
     dt = attr.ib(type=float, default=0.05)                     # how much time passes between two observations
     goal_ang_dist = attr.ib(type=float, default=np.pi/2)       # how close angularly to goal to reach it
@@ -27,6 +29,8 @@ class EnvParams(object):
     control_delay = attr.ib(default=0, type=int)               # how much delay in perceived controls
     state_delay = attr.ib(default=0, type=int)                 # state perception delay, in reality ~ 0.11s (2 steps)
 
+    reward_provider_name = attr.ib(                            # name of the reward provider
+        default=RewardProviderExamples.CONTINUOUS_REWARD_PURE_PURSUIT)
     reward_provider_params = attr.ib(                          # parameters of the reward provider
         default=attr.Factory(
             lambda self: RewardParams(
@@ -36,3 +40,19 @@ class EnvParams(object):
             takes_self=True
         )
     )
+
+    VERSION = 1
+
+    def serialize(self):
+        # pylint: disable=no-member
+        resu = attr.asdict(self)
+        resu['version'] = self.VERSION
+        resu['reward_provider_params'] = self.reward_provider_params.serialize()
+        return resu
+
+    @classmethod
+    def deserialize(cls, state):
+        ver = state.pop('version')
+        assert ver == cls.VERSION
+        state['reward_provider_params'] = RewardParams.deserialize(state['reward_provider_params'])
+        return cls(**state)
