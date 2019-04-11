@@ -36,7 +36,7 @@ class Wall(object):
         :param costmap Costmap2D: Costmap to draw the wall on.
         :return Costmap2D: the costmap with the wall on it
         """
-        add_wall_to_static_map(costmap, self.from_pt, self.to_pt)
+        add_wall_to_static_map(costmap, self.from_pt, self.to_pt, width=costmap.get_resolution()*4)
         return costmap
 
 
