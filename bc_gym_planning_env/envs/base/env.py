@@ -196,9 +196,10 @@ def make_initial_state(path, costmap, robot, reward_provider, params):
     robot_state = robot.get_initial_state()
     robot_state.set_pose(initial_pose)
 
+    initial_reward_provider_state = reward_provider.generate_initial_state(path, params.reward_provider_params)
     return State(
-        reward_provider_state=reward_provider.generate_initial_state(path, params.reward_provider_params),
-        path=np.ascontiguousarray(path),
+        reward_provider_state=initial_reward_provider_state,
+        path=np.ascontiguousarray(initial_reward_provider_state.current_path()),
         original_path=np.copy(np.ascontiguousarray(path)),
         costmap=costmap,
         iter_timeout=params.iteration_timeout,
@@ -343,12 +344,13 @@ class PlanEnv(Serializable):
         self._state = self._resolve_state_transition(action, self._state)
 
         reward = self._reward_provider.reward(self._state)
-        obs = self._extract_obs()
-        info = self._extract_info()
-        done = self._extract_done(self._state)
 
         self._state.reward_provider_state = self._reward_provider.get_state()
         self._state.path = self._reward_provider.get_current_path()
+
+        obs = self._extract_obs()
+        info = self._extract_info()
+        done = self._extract_done(self._state)
 
         return obs, reward, done, info
 

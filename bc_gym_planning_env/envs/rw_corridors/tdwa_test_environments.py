@@ -7,6 +7,7 @@ import os
 import requests
 import shutil
 import pickle
+import sys
 
 from bc_gym_planning_env.utilities.artifacts_utils import decompress_tar_archive, get_cache_key_path
 
@@ -48,9 +49,14 @@ def get_random_maps_squeeze_between_obstacle_in_corridor_on_path():
             shutil.rmtree(tar_contents_folder)
             raise ex
 
-    with open(os.path.join(tar_contents_folder, test_maps_cache)) as f:
-        original_costmap = CostMap2D.from_state(pickle.load(f))
-        static_path = pickle.load(f)
-        test_maps = tuple([CostMap2D.from_state(s) for s in pickle.load(f)])
+    with open(os.path.join(tar_contents_folder, test_maps_cache), 'rb') as f:
+        if sys.version_info > (3, 0):
+            original_costmap = CostMap2D.from_state(pickle.load(f, encoding='latin1'))  # pylint: disable=unexpected-keyword-arg
+            static_path = pickle.load(f, encoding='latin1')     # pylint: disable=unexpected-keyword-arg
+            test_maps = tuple([CostMap2D.from_state(s) for s in pickle.load(f, encoding='latin1')])     # pylint: disable=unexpected-keyword-arg
+        else:
+            original_costmap = CostMap2D.from_state(pickle.load(f))
+            static_path = pickle.load(f)
+            test_maps = tuple([CostMap2D.from_state(s) for s in pickle.load(f)])
 
     return original_costmap, static_path, test_maps
