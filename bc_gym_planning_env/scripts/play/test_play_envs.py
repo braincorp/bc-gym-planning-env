@@ -49,7 +49,7 @@ def test_play_real_corridor_env():
 
 
 def test_play_mini_env():
-    for seed in range(1000):
+    for seed in range(10):
         print(seed)
 
         env = RandomMiniEnv()
