@@ -60,7 +60,7 @@ def train_model():
         algo=PpoPolicyGradient(
             entropy_coefficient=0.01,
             value_coefficient=0.5,
-            max_grad_norm=0.02,
+            max_grad_norm=0.01,
             cliprange=cliprange
         ),
         env_roller=StepEnvRoller(
@@ -73,7 +73,7 @@ def train_model():
     )
 
     # Model optimizer
-    optimizer = optim.Adam(reinforcer.model.parameters(), lr=5e-6, eps=1.0e-5)
+    optimizer = optim.Adam(reinforcer.model.parameters(), lr=1e-6, eps=1.0e-5)
 
     # Overall information store for training information
     training_info = TrainingInfo(
