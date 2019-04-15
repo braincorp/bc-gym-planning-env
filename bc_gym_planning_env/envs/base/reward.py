@@ -125,6 +125,7 @@ class ContinuousRewardPurePursuitProviderState(Serializable):
         """
         # pylint: disable=unsubscriptable-object
         return self.path[:self.target_idx+1]
+        #return self.path
 
     def update_goal(self, pose, radius=2.):
         """

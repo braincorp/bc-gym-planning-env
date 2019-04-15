@@ -23,7 +23,7 @@ class EnvParams(Serializable):
     robot_name = attr.ib(
         default=StandardRobotExamples.INDUSTRIAL_TRICYCLE_V1)             # name of the robot, e.g. determines footprint
     resolution = attr.ib(default=0.03, type=float)             # spatial resolution
-    refine_path = attr.ib(default=False, type=bool)            # should we make path dense?
+    refine_path = attr.ib(default=True, type=bool)            # should we make path dense?
     path_delta = attr.ib(default=0.05, type=float)             # if we want to make path dense, make a point every 5cm
     pose_delay = attr.ib(default=0, type=int)                  # we perceive poses with how much delay
     control_delay = attr.ib(default=0, type=int)               # how much delay in perceived controls

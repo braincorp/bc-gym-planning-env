@@ -175,6 +175,7 @@ def path_and_costmap_from_config(params):
         Wall(from_pt=c, to_pt=d),
         Wall(from_pt=d, to_pt=e),
         Wall(from_pt=j, to_pt=g),
+        Wall(from_pt=g+a-c, to_pt=g),
         Wall(from_pt=g, to_pt=h)
     ]
 
@@ -324,12 +325,23 @@ class RandomAisleTurnEnv(object):
             main_corridor_length=self._rng.uniform(10, 16),
             turn_corridor_length=self._rng.uniform(4, 12),
             turn_corridor_angle=self._rng.uniform(-3./8. * np.pi, 3./8.*np.pi),
-            main_corridor_width=self._rng.uniform(0.5, 1.5),
-            turn_corridor_width=self._rng.uniform(0.5, 1.5),
+            main_corridor_width=self._rng.uniform(1.0, 1.5),
+            turn_corridor_width=self._rng.uniform(1.0, 1.5),
             flip_arnd_oy=bool(self._rng.rand() < 0.5),
             flip_arnd_ox=bool(self._rng.rand() < 0.5),
             rot_theta=self._rng.uniform(0, 2*np.pi)
         )
+
+        #return TurnParams(
+        #    main_corridor_length=6,
+        #    turn_corridor_length=4,
+        #    turn_corridor_angle=2. / 8. * np.pi,
+        #    main_corridor_width=1.0,
+        #    turn_corridor_width=1.0,
+        #    flip_arnd_oy=bool(self._rng.rand() < 0.5),
+        #    flip_arnd_ox=False, #bool(self._rng.rand() < 0.5),
+        #    rot_theta=0.
+        #)
 
 
 class ColoredCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
@@ -390,7 +402,7 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         data_shape = (pixel_size[1], pixel_size[0], 1)
         self.observation_space = spaces.Dict(OrderedDict((
             ('environment', spaces.Box(low=0, high=255, shape=data_shape, dtype=np.uint8)),
-            ('goal', spaces.Box(low=-1., high=1., shape=(2, 1), dtype=np.float64))
+            ('goal', spaces.Box(low=-1., high=1., shape=(5, 1), dtype=np.float64))
         )))
 
     def _extract_egocentric_observation(self, rich_observation):
@@ -410,10 +422,15 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
 
         ego_path = from_global_to_egocentric(rich_observation.path, robot_pose)
         obs = np.expand_dims(ego_costmap.get_data(), -1)
-        normalized_goal = ego_path[-1, :2] / ego_costmap.world_size()
+        normalized_goal = ego_path[-1, :2] / ego_costmap.get_resolution()
         normalized_goal = normalized_goal / np.linalg.norm(normalized_goal)
+
+        robot_state = rich_observation.robot_state.to_numpy_array()
+        goal_n_state = np.hstack([normalized_goal, robot_state[3:]])
+        #goal_n_state = normalized_goal
+
         return OrderedDict((('environment', obs),
-                            ('goal', np.expand_dims(normalized_goal, -1))))
+                            ('goal', np.expand_dims(goal_n_state, -1))))
 
     def step(self, action):
         """
