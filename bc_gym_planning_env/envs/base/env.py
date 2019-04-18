@@ -229,8 +229,8 @@ class PlanEnv(Serializable):
 
         # Properties, things without state
         self.action_space = spaces.Box(
-            low=np.array([0.1, -np.pi/3]),
-            high=np.array([0.5, np.pi/3]),
+            low=np.array([0.1, -1.5]),
+            high=np.array([0.5, 1.5]),
             dtype=np.float32)
         self.reward_range = (0.0, 1.0)
         self._gui = OpenCVGui()

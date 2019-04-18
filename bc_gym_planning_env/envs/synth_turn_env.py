@@ -321,7 +321,7 @@ class RandomAisleTurnEnv(object):
 
         :return TurnParams: Random turn params
         """
-        if self._rng.rand() < 0.75:
+        if self._rng.rand() < 0.00:
             turn_corridor_angle = self._rng.uniform(-0. / 8. * np.pi, 3. / 8. * np.pi)
         else:
             turn_corridor_angle = self._rng.uniform(-3. / 8. * np.pi, 0. / 8. * np.pi)
@@ -398,7 +398,7 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         super(ColoredEgoCostmapRandomAisleTurnEnv, self).__init__()
         # TODO: Will need some trickery to do it fully openai gym style
         # As openai gym style requires knowing resolution of the image up front
-        self._egomap_x_bounds = np.array([-0.5, 3.])  # aligned with robot's direction
+        self._egomap_x_bounds = np.array([-0.5, 3.5])  # aligned with robot's direction
         self._egomap_y_bounds = np.array([-2., 2.])  # orthogonal to robot's direction
         resulting_size = (self._egomap_x_bounds[1] - self._egomap_x_bounds[0],
                           self._egomap_y_bounds[1] - self._egomap_y_bounds[0])

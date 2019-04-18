@@ -39,7 +39,7 @@ def train_model():
     # But because model is owned by the reinforcer, model should not be accessed using this variable
     # but from reinforcer.model property
     model = PolicyGradientModelFactory(
-        backbone=NatureCnnTwoTowerFactory(input_width=133, input_height=117, input_channels=1)
+        backbone=NatureCnnTwoTowerFactory(input_width=133, input_height=133, input_channels=1)
     ).instantiate(action_space=vec_env.action_space)
 
     # Set schedule for gradient clipping.
@@ -212,7 +212,7 @@ def eval_model():
     vec_env.reset()
 
     model = PolicyGradientModelFactory(
-        backbone=NatureCnnTwoTowerFactory(input_width=133, input_height=117, input_channels=1)
+        backbone=NatureCnnTwoTowerFactory(input_width=133, input_height=133, input_channels=1)
     ).instantiate(action_space=vec_env.action_space)
     model_checkpoint = torch.load('tmp_checkout.data', map_location='cpu')
     model.load_state_dict(model_checkpoint)
