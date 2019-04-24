@@ -427,6 +427,7 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
 
         ego_path = from_global_to_egocentric(rich_observation.path, robot_pose)
         obs = np.expand_dims(ego_costmap.get_data(), -1)
+        # obs = self._add_coords(obs)
         normalized_goal = ego_path[-1, :2] / ego_costmap.get_resolution()
         normalized_goal = normalized_goal / np.linalg.norm(normalized_goal)
 
@@ -436,6 +437,35 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
 
         return OrderedDict((('environment', obs),
                             ('goal', np.expand_dims(goal_n_state, -1))))
+
+    def _add_coords(self, input_tensor):
+        x_dim = input_tensor.shape[0]
+        y_dim = input_tensor.shape[1]
+
+        xx_ones = np.ones([1, y_dim], dtype=np.int32)
+        xx_ones = np.expand_dims(xx_ones, -1)
+
+        xx_range = np.expand_dims(np.arange(x_dim), -1)
+        xx_range = np.expand_dims(xx_range, -1)
+
+        xx_channel = np.matmul(xx_ones, xx_range)
+
+        yy_ones = np.ones([x_dim, 1], dtype=np.int32)
+        yy_ones = np.expand_dims(yy_ones, -1)
+
+        yy_range = np.expand_dims(np.arange(y_dim), 0)
+        yy_range = np.expand_dims(yy_range, -1)
+
+        yy_channel = np.matmul(yy_range, yy_ones)
+
+        xx_channel = xx_channel.astype('float32') / (x_dim - 1)
+        yy_channel = yy_channel.astype('float32') / (y_dim - 1)
+
+        xx_channel = (xx_channel * 2 - 1) * 255.0
+        yy_channel = (yy_channel * 2 - 1) * 255.0
+
+        ret = np.concatenate([input_tensor, xx_channel, yy_channel], axis=-1)
+        return ret
 
     def step(self, action):
         """
