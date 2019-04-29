@@ -175,7 +175,6 @@ def path_and_costmap_from_config(params):
         Wall(from_pt=c, to_pt=d),
         Wall(from_pt=d, to_pt=e),
         Wall(from_pt=j, to_pt=g),
-        Wall(from_pt=g+a-c, to_pt=g),
         Wall(from_pt=g, to_pt=h)
     ]
 
@@ -321,32 +320,16 @@ class RandomAisleTurnEnv(object):
 
         :return TurnParams: Random turn params
         """
-        if self._rng.rand() < 0.00:
-            turn_corridor_angle = self._rng.uniform(-0. / 8. * np.pi, 3. / 8. * np.pi)
-        else:
-            turn_corridor_angle = self._rng.uniform(-3. / 8. * np.pi, 0. / 8. * np.pi)
-
         return TurnParams(
             main_corridor_length=self._rng.uniform(10, 16),
             turn_corridor_length=self._rng.uniform(4, 12),
-            turn_corridor_angle=turn_corridor_angle,    # self._rng.uniform(-3./8. * np.pi, 3./8.*np.pi),
+            turn_corridor_angle=self._rng.uniform(-3./8. * np.pi, 3./8.*np.pi),
             main_corridor_width=self._rng.uniform(1.0, 1.5),
             turn_corridor_width=self._rng.uniform(1.0, 1.5),
             flip_arnd_oy=bool(self._rng.rand() < 0.5),
             flip_arnd_ox=bool(self._rng.rand() < 0.5),
             rot_theta=self._rng.uniform(0, 2*np.pi)
         )
-
-        #return TurnParams(
-        #    main_corridor_length=6,
-        #    turn_corridor_length=4,
-        #    turn_corridor_angle=2. / 8. * np.pi,
-        #    main_corridor_width=1.0,
-        #    turn_corridor_width=1.0,
-        #    flip_arnd_oy=bool(self._rng.rand() < 0.5),
-        #    flip_arnd_ox=False, #bool(self._rng.rand() < 0.5),
-        #    rot_theta=0.
-        #)
 
 
 class ColoredCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
@@ -427,45 +410,14 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
 
         ego_path = from_global_to_egocentric(rich_observation.path, robot_pose)
         obs = np.expand_dims(ego_costmap.get_data(), -1)
-        # obs = self._add_coords(obs)
-        normalized_goal = ego_path[-1, :2] / ego_costmap.get_resolution()
+        normalized_goal = ego_path[-1, :2] / ego_costmap.world_size()
         normalized_goal = normalized_goal / np.linalg.norm(normalized_goal)
 
         robot_state = rich_observation.robot_state.to_numpy_array()
         goal_n_state = np.hstack([normalized_goal, robot_state[3:]])
-        #goal_n_state = normalized_goal
 
         return OrderedDict((('environment', obs),
                             ('goal', np.expand_dims(goal_n_state, -1))))
-
-    def _add_coords(self, input_tensor):
-        x_dim = input_tensor.shape[0]
-        y_dim = input_tensor.shape[1]
-
-        xx_ones = np.ones([1, y_dim], dtype=np.int32)
-        xx_ones = np.expand_dims(xx_ones, -1)
-
-        xx_range = np.expand_dims(np.arange(x_dim), -1)
-        xx_range = np.expand_dims(xx_range, -1)
-
-        xx_channel = np.matmul(xx_ones, xx_range)
-
-        yy_ones = np.ones([x_dim, 1], dtype=np.int32)
-        yy_ones = np.expand_dims(yy_ones, -1)
-
-        yy_range = np.expand_dims(np.arange(y_dim), 0)
-        yy_range = np.expand_dims(yy_range, -1)
-
-        yy_channel = np.matmul(yy_range, yy_ones)
-
-        xx_channel = xx_channel.astype('float32') / (x_dim - 1)
-        yy_channel = yy_channel.astype('float32') / (y_dim - 1)
-
-        xx_channel = (xx_channel * 2 - 1) * 255.0
-        yy_channel = (yy_channel * 2 - 1) * 255.0
-
-        ret = np.concatenate([input_tensor, xx_channel, yy_channel], axis=-1)
-        return ret
 
     def step(self, action):
         """
