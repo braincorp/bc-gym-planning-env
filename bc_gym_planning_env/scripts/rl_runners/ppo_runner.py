@@ -163,15 +163,18 @@ def record_take(model, env_instance, device, debug=False):
     print("Evaluating environment...")
 
     while True:
-        observation_tensor = _dict_to_tensor(observation, device)
+        observation_tensor = _bc_observations_to_tensor(observation, device)
         if isinstance(model, PolicyGradientModel):
-            actions = model.step(observation_tensor, argmax_sampling=False)['actions'].to(device)[0]
+            actions = model.step(observation_tensor, argmax_sampling=False)['actions'].cpu().numpy()
         elif isinstance(model, DeterministicPolicyModel):
-            actions = model.step(observation_tensor)['actions'].to(device)[0]
+            actions = model.step(observation_tensor)['actions'].cpu().numpy()
         else:
             raise NotImplementedError
-        action_class = Action(command=actions.cpu().numpy())
-        observation, reward, done, epinfo = env_instance.step(action_class)
+        action_classes = []
+        for i in range(actions.shape[0]):
+            action_class = Action(command=actions[i, :])
+            action_classes.append(action_class)
+        observation, reward, done, epinfo = env_instance.step(action_classes)
         steps += 1
         rewards += reward
         if debug or device.type == 'cpu':
@@ -182,19 +185,21 @@ def record_take(model, env_instance, device, debug=False):
             return {'r': rewards, 'l': steps, 'frames': frames}
 
 
-def _dict_to_tensor(numpy_array_dict, device):
+def _bc_observations_to_tensor(observations, device):
     """Convert numpy array to a tensor
-    :param numpy_array_dict dict: a dictionary of np.array
+    :param observations dict: a dictionary of np.array
     :param device: put tensor on cpu or gpu
-    :return: a dictionary of torch tensors
+    :return: stack all observations into one torch tensors
     """
-    if isinstance(numpy_array_dict, dict):
-        torch_dict = {}
-        for k, v in numpy_array_dict.items():
-            torch_dict[k] = torch.from_numpy(numpy_array_dict[k]).to(device)
-        return torch_dict
+    if isinstance(observations, dict):
+        input1 = observations['environment']
+        input2 = observations['goal']
+        input_additional_channel = np.zeros(input1.shape[:-1]+(1,))
+        input_additional_channel[:, 0, 0:5, :] = input2
+        input = np.concatenate((input1.astype(float), input_additional_channel), axis=3)
+        return torch.from_numpy(input).to(device)
     else:
-        return torch.from_numpy(numpy_array_dict).to(device)
+        raise NotImplementedError
 
 
 def eval_model():
@@ -228,7 +233,7 @@ def save_as_video(frames):
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     video_shape = (400, 600)
-    out = cv2.VideoWriter('output.avi', fourcc, 400.0, video_shape)
+    out = cv2.VideoWriter('output.avi', fourcc, 100.0, video_shape)
 
     for trial in frames:
         for frame in trial:
