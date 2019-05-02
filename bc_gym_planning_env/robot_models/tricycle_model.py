@@ -270,12 +270,6 @@ class TricycleRobotState(Serializable):
         """
         return np.array([self.x, self.y, self.angle, self.v, self.w, self.wheel_angle], dtype=np.float64)
 
-    def egocentric_state_numpy_array(self):
-        """ Render the egocentric state to the numpy array.
-        :return np.ndarray: the numpy array reflecting the state
-        """
-        return np.array([self.v, self.w, self.wheel_angle], dtype=np.float64)
-
     def old_style(self):
         """
         Get the state of the robot.
