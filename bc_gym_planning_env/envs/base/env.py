@@ -187,7 +187,7 @@ def make_initial_state(path, costmap, robot, reward_provider, params):
     """
 
     if params.refine_path:
-        path = refine_path(path, params.path_delta)
+        path = refine_path(path, params.path_delta, params.path_delta)
 
     assert path.shape[1] == 3
 
