@@ -170,13 +170,23 @@ def path_and_costmap_from_config(params):
     world_size = abs(max_x - min_x) + 2 * margin, abs(max_y - min_y) + 2 * margin
     world_origin = min_x - margin, min_y - margin
 
-    obstacles = [
-        Wall(from_pt=a, to_pt=i),
-        Wall(from_pt=c, to_pt=d),
-        Wall(from_pt=d, to_pt=e),
-        Wall(from_pt=j, to_pt=g),
-        Wall(from_pt=g, to_pt=h)
-    ]
+    if np.random.rand() < 0.0:
+        obstacles = [
+                Wall(from_pt=a, to_pt=i),
+                Wall(from_pt=c, to_pt=d),
+                Wall(from_pt=d, to_pt=e),
+                Wall(from_pt=j, to_pt=g),
+                Wall(from_pt=g, to_pt=h)
+        ]
+    else:
+        obstacles = [
+                Wall(from_pt=a, to_pt=i),
+                Wall(from_pt=c, to_pt=d),
+                Wall(from_pt=d, to_pt=e),
+                Wall(from_pt=j, to_pt=g),
+                Wall(from_pt=g + a - c, to_pt=g),
+                Wall(from_pt=g, to_pt=h)
+        ]
 
     static_path = np.array([rb, rk, rl, rf])
 
@@ -320,16 +330,32 @@ class RandomAisleTurnEnv(object):
 
         :return TurnParams: Random turn params
         """
+        if self._rng.rand() < 0.50:
+            turn_corridor_angle = self._rng.uniform(-0. / 8. * np.pi, 3. / 8. * np.pi)
+        else:
+            turn_corridor_angle = self._rng.uniform(-3. / 8. * np.pi, 0. / 8. * np.pi)
+
         return TurnParams(
             main_corridor_length=self._rng.uniform(10, 16),
             turn_corridor_length=self._rng.uniform(4, 12),
-            turn_corridor_angle=self._rng.uniform(-3./8. * np.pi, 3./8.*np.pi),
-            main_corridor_width=self._rng.uniform(0.5, 1.5),
-            turn_corridor_width=self._rng.uniform(0.5, 1.5),
+            turn_corridor_angle=turn_corridor_angle,     # self._rng.uniform(-3./8. * np.pi, 3./8.*np.pi),
+            main_corridor_width=self._rng.uniform(1.0, 1.5),
+            turn_corridor_width=self._rng.uniform(1.0, 1.5),
             flip_arnd_oy=bool(self._rng.rand() < 0.5),
             flip_arnd_ox=bool(self._rng.rand() < 0.5),
             rot_theta=self._rng.uniform(0, 2*np.pi)
         )
+
+        # return TurnParams(
+        # main_corridor_length=6,
+        # turn_corridor_length=4,
+        # turn_corridor_angle=2. / 8. * np.pi,
+        # main_corridor_width=1.0,
+        # turn_corridor_width=1.0,
+        # flip_arnd_oy=bool(self._rng.rand() < 0.5),
+        # flip_arnd_ox=False, #bool(self._rng.rand() < 0.5),
+        # rot_theta=0.
+        # )
 
 
 class ColoredCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
