@@ -413,8 +413,8 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         normalized_goal = ego_path[-1, :2] / ego_costmap.world_size()
         normalized_goal = normalized_goal / np.linalg.norm(normalized_goal)
 
-        robot_egocentric_state = rich_observation.robot_state.egocentric_state_numpy_array()
-        goal_n_state = np.hstack([normalized_goal, robot_egocentric_state])
+        robot_state = rich_observation.robot_state.to_numpy_array()
+        goal_n_state = np.hstack([normalized_goal, robot_state[3:]])
 
         return OrderedDict((('environment', obs),
                             ('goal', np.expand_dims(goal_n_state, -1))))
