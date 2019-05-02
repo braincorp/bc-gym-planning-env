@@ -412,6 +412,7 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         obs = np.expand_dims(ego_costmap.get_data(), -1)
         normalized_goal = ego_path[-1, :2] / ego_costmap.world_size()
         normalized_goal = normalized_goal / np.linalg.norm(normalized_goal)
+
         return OrderedDict((('environment', obs),
                             ('goal', np.expand_dims(normalized_goal, -1))))
 
