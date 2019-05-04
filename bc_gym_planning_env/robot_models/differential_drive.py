@@ -110,6 +110,13 @@ class DiffdriveRobotState(Serializable):
         """
         return np.array([self.x, self.y, self.angle, self.v, self.w], dtype=np.float64)
 
+    def egocentric_state_numpy_array(self):
+        """ Render the egocentric state to the numpy array.
+        :return np.ndarray: the numpy array reflecting the state
+        """
+        dummy_wheel_angle = 0.0     # a dummy place holder to keep the same dimension with tricycle drive
+        return np.array([self.v, self.w, dummy_wheel_angle], dtype=np.float64)
+
     def get_robot_type_name(self):
         """ Get the type (string describing the type) of robot type.
         :return StandardRobotExamples: enum member defining type of robots type

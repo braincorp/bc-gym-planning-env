@@ -381,7 +381,7 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         super(ColoredEgoCostmapRandomAisleTurnEnv, self).__init__()
         # TODO: Will need some trickery to do it fully openai gym style
         # As openai gym style requires knowing resolution of the image up front
-        self._egomap_x_bounds = np.array([-0.5, 3.])  # aligned with robot's direction
+        self._egomap_x_bounds = np.array([-0.5, 3.5])  # aligned with robot's direction
         self._egomap_y_bounds = np.array([-2., 2.])  # orthogonal to robot's direction
         resulting_size = (self._egomap_x_bounds[1] - self._egomap_x_bounds[0],
                           self._egomap_y_bounds[1] - self._egomap_y_bounds[0])
@@ -390,7 +390,7 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         data_shape = (pixel_size[1], pixel_size[0], 1)
         self.observation_space = spaces.Dict(OrderedDict((
             ('environment', spaces.Box(low=0, high=255, shape=data_shape, dtype=np.uint8)),
-            ('goal', spaces.Box(low=-1., high=1., shape=(2, 1), dtype=np.float64))
+            ('goal', spaces.Box(low=-1., high=1., shape=(5, 1), dtype=np.float64))
         )))
 
     def _extract_egocentric_observation(self, rich_observation):
@@ -412,8 +412,12 @@ class ColoredEgoCostmapRandomAisleTurnEnv(RandomAisleTurnEnv):
         obs = np.expand_dims(ego_costmap.get_data(), -1)
         normalized_goal = ego_path[-1, :2] / ego_costmap.world_size()
         normalized_goal = normalized_goal / np.linalg.norm(normalized_goal)
+
+        robot_egocentric_state = rich_observation.robot_state.egocentric_state_numpy_array()
+        goal_n_state = np.hstack([normalized_goal, robot_egocentric_state])
+
         return OrderedDict((('environment', obs),
-                            ('goal', np.expand_dims(normalized_goal, -1))))
+                            ('goal', np.expand_dims(goal_n_state, -1))))
 
     def step(self, action):
         """
