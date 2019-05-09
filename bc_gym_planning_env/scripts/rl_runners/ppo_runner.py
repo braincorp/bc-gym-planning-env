@@ -217,7 +217,8 @@ def eval_model():
     vec_env = DummyVecEnv([env_function])
     vec_env.reset()
 
-    model = PolicyGradientModelFactory(
+    model = StochasticPolicyModelFactory(
+        input_block=ImageToTensorFactory(),
         backbone=NatureCnnTwoTowerFactory(input_width=133, input_height=133, input_channels=1)
     ).instantiate(action_space=vec_env.action_space)
     model_checkpoint = torch.load('tmp_checkout.data', map_location='cpu')
