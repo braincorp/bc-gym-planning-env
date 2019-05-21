@@ -88,6 +88,8 @@ class MiniEnvParams(object):
     obstacle_o = attr.ib(type=Point)
     obstacle_b = attr.ib(type=Point)
 
+    turn_off_obstacles = attr.ib(type=bool, default=False)
+
     env_params = attr.ib(factory=EnvParams)
 
 
@@ -383,8 +385,9 @@ def prepare_map_and_path(params):
         world_origin=(-params.h / 2., -params.w /2.)
     )
 
-    for obs in obstacles:
-        static_map = obs.render(static_map)
+    if not params.turn_off_obstacles:
+        for obs in obstacles:
+            static_map = obs.render(static_map)
 
     return static_map, coarse_static_path
 
