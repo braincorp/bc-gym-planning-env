@@ -182,7 +182,7 @@ def record_take(model, env_instance, device, debug=False):
             frames.append(env_instance.render(mode='human'))
 
         if done:
-            print("episode reward: {}, steps: {}".format(rewards, steps))
+            print("episode reward: {}, steps: {}, collide: {}".format(rewards, steps, epinfo[0]['episode']['collide']))
             return {'r': rewards, 'l': steps, 'frames': frames}
 
 
