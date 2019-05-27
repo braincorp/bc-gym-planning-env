@@ -156,6 +156,17 @@ def record_take(model, env_instance, device, debug=False):
     :param debug: debug mode has gui output
     :return: some basic metric info of this rollout
     """
+    command_dict = {0: [0.2, 0.0],
+                    1: [0.2, 0.3],
+                    2: [0.2, -0.3],
+                    3: [0.2, 0.5],
+                    4: [0.2, -0.5],
+                    5: [0.2, 0.7],
+                    6: [0.2, -0.7],
+                    7: [0.2, 1.1],
+                    8: [0.2, -1.1],
+                    9: [0.2, 1.3],
+                    10: [0.2, -1.3]}
     frames = []
     steps = 0
     rewards = 0
@@ -173,7 +184,8 @@ def record_take(model, env_instance, device, debug=False):
             raise NotImplementedError
         action_classes = []
         for i in range(actions.shape[0]):
-            action_class = Action(command=actions[i, :])
+            action_class = Action(command=command_dict[actions[i]])
+            # action_class = Action(command=actions[i, :])
             action_classes.append(action_class)
         observation, reward, done, epinfo = env_instance.step(action_classes)
         steps += 1

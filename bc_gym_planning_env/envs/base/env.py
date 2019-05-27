@@ -230,10 +230,11 @@ class PlanEnv(Serializable):
         self._reward_provider = reward_provider_example(params=params.reward_provider_params)
 
         # Properties, things without state
-        self.action_space = spaces.Box(
-            low=np.array([0.1, -1.5]),
-            high=np.array([0.5, 1.5]),
-            dtype=np.float32)
+        # self.action_space = spaces.Box(
+        #     low=np.array([0.1, -1.5]),
+        #     high=np.array([0.5, 1.5]),
+        #     dtype=np.float32)
+        self.action_space = spaces.Discrete(11)
         self.reward_range = (0.0, 1.0)
         self._gui = OpenCVGui()
         self._params = params
