@@ -21,7 +21,9 @@ from bc_gym_planning_env.envs.base.params import EnvParams
 from bc_gym_planning_env.envs.base import spaces
 from bc_gym_planning_env.envs.base.reward_provider_examples_factory import\
     create_reward_provider_state, get_reward_provider_example
+from bc_gym_planning_env.envs.base.action_space_examples import get_action_space_example
 from bc_gym_planning_env.utilities.gui import OpenCVGui
+from bc_gym_planning_env.envs.base.action import Action
 
 
 def _get_element_from_list_with_delay(item_list, element, delay):
@@ -230,11 +232,23 @@ class PlanEnv(Serializable):
         self._reward_provider = reward_provider_example(params=params.reward_provider_params)
 
         # Properties, things without state
+        self.action_space, self._action_command_list = get_action_space_example(params.action_space_name)
         # self.action_space = spaces.Box(
         #     low=np.array([0.1, -1.5]),
         #     high=np.array([0.5, 1.5]),
         #     dtype=np.float32)
-        self.action_space = spaces.Discrete(11)
+        # self.action_space = spaces.Discrete(11)
+        # self._action_command_list = {0: [0.2, 0.0],
+        #                              1: [0.2, 0.3],
+        #                              2: [0.2, -0.3],
+        #                              3: [0.2, 0.5],
+        #                              4: [0.2, -0.5],
+        #                              5: [0.2, 0.7],
+        #                              6: [0.2, -0.7],
+        #                              7: [0.2, 1.1],
+        #                              8: [0.2, -1.1],
+        #                              9: [0.2, 1.3],
+        #                              10: [0.2, -1.3]}
         self.reward_range = (0.0, 1.0)
         self._gui = OpenCVGui()
         self._params = params
@@ -344,6 +358,8 @@ class PlanEnv(Serializable):
         """
 
         # Process the environment dynamics
+        if isinstance(self.action_space, spaces.Discrete):
+            action = Action(self._action_command_list[action.command])
         self._state = self._resolve_state_transition(action, self._state)
 
         reward = self._reward_provider.reward(self._state)

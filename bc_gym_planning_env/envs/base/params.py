@@ -9,6 +9,7 @@ from bc_gym_planning_env.robot_models.standard_robot_names_examples import Stand
 from bc_gym_planning_env.utilities.serialize import Serializable
 from bc_gym_planning_env.envs.base.reward import RewardParams
 from bc_gym_planning_env.envs.base.reward_provider_examples import RewardProviderExamples
+from bc_gym_planning_env.envs.base.action_space_examples import ActionSpaceExamples
 
 
 @attr.s(frozen=True)
@@ -29,6 +30,8 @@ class EnvParams(Serializable):
     control_delay = attr.ib(default=0, type=int)               # how much delay in perceived controls
     state_delay = attr.ib(default=0, type=int)                 # state perception delay, in reality ~ 0.11s (2 steps)
 
+    action_space_name = attr.ib(                            # name of the action space
+        default=ActionSpaceExamples.DISCRETE_SPACE)
     reward_provider_name = attr.ib(                            # name of the reward provider
         default=RewardProviderExamples.CONTINUOUS_REWARD_PURE_PURSUIT)
     reward_provider_params = attr.ib(                          # parameters of the reward provider
