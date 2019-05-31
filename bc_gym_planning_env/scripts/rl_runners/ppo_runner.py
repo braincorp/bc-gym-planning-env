@@ -132,6 +132,7 @@ def evaluate_model(model, env, device, takes=1, debug=False):
 
     rewards = []
     lengths = []
+    pass_count = 0
     video_recorder = VideoRecorder()
 
     for i in range(takes):
@@ -140,12 +141,14 @@ def evaluate_model(model, env, device, takes=1, debug=False):
         rewards.append(result['r'])
         lengths.append(result['l'])
         frames.append(result['frames'])
+        if result['l'] != 1200 and not result['collide']:
+            pass_count += 1
 
         if debug:
             video_recorder.save_as_video(frames)
 
     video_recorder.release()
-    print(pd.DataFrame({'lengths': lengths, 'rewards': rewards}).describe())
+    print("success rate: {}/{}".format(pass_count, takes))
     model.train(mode=True)
     return {'rewards': rewards, 'lengths': lengths}
 
@@ -186,7 +189,7 @@ def record_take(model, env_instance, device, debug=False):
 
         if done:
             print("episode reward: {}, steps: {}, collide: {}".format(rewards, steps, epinfo[0]['episode']['collide']))
-            return {'r': rewards, 'l': steps, 'frames': frames}
+            return {'r': rewards, 'l': steps, 'frames': frames, 'collide': epinfo[0]['episode']['collide']}
 
 
 def _bc_observations_to_tensor(observations, device):
