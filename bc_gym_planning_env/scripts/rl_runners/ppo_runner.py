@@ -132,16 +132,19 @@ def evaluate_model(model, env, device, takes=1, debug=False):
 
     rewards = []
     lengths = []
-    frames = []
+    video_recorder = VideoRecorder()
 
     for i in range(takes):
+        frames = []
         result = record_take(model, env, device)
         rewards.append(result['r'])
         lengths.append(result['l'])
         frames.append(result['frames'])
 
-    if debug:
-        save_as_video(frames)
+        if debug:
+            video_recorder.save_as_video(frames)
+
+    video_recorder.release()
     print(pd.DataFrame({'lengths': lengths, 'rewards': rewards}).describe())
     model.train(mode=True)
     return {'rewards': rewards, 'lengths': lengths}
@@ -227,29 +230,32 @@ def eval_model():
     evaluate_model(model, vec_env, device, takes=10)
 
 
-def save_as_video(frames):
-    """function to record a demo video
-    :param frames list[np.array]:  a list of images
-    :return: None, video saved as a file
-    """
-    # Define the codec and create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    video_shape = (400, 600)
-    out = cv2.VideoWriter('output.avi', fourcc, 100.0, video_shape)
+class VideoRecorder(object):
+    def __init__(self):
+        # Define the codec and create VideoWriter object
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        self._video_shape = (400, 600)
+        self._out = cv2.VideoWriter('output.avi', fourcc, 100.0, self._video_shape)
 
-    for trial in frames:
-        for frame in trial:
-            frame = frame[0]
-            frame = cv2.resize(frame, video_shape)
-            # write the flipped frame
-            out.write(frame)
+    def save_as_video(self, frames):
+        """function to record a demo video
+        :param frames list[np.array]:  a list of images
+        :return: None, video saved as a file
+        """
+        for trial in frames:
+            for frame in trial:
+                # frame = frame[0]
+                frame = cv2.resize(frame, self._video_shape)
+                # write the flipped frame
+                self._out.write(frame)
 
-            cv2.imshow('frame', frame)
-            cv2.waitKey(1)
+                # cv2.imshow('frame', frame)
+                # cv2.waitKey(1)
 
-    # Release everything if job is finished
-    out.release()
-    cv2.destroyAllWindows()
+    def release(self):
+        # Release everything if job is finished
+        self._out.release()
+        cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
