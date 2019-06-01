@@ -171,11 +171,11 @@ def path_and_costmap_from_config(params):
     world_origin = min_x - margin, min_y - margin
 
     obstacles = [
-            Wall(from_pt=a, to_pt=i),
-            Wall(from_pt=c, to_pt=d),
-            Wall(from_pt=d, to_pt=e),
-            Wall(from_pt=j, to_pt=g),
-            Wall(from_pt=g, to_pt=h)
+        Wall(from_pt=a, to_pt=i),
+        Wall(from_pt=c, to_pt=d),
+        Wall(from_pt=d, to_pt=e),
+        Wall(from_pt=j, to_pt=g),
+        Wall(from_pt=g, to_pt=h)
     ]
 
     static_path = np.array([rb, rk, rl, rf])
