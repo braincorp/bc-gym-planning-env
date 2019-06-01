@@ -247,13 +247,9 @@ class VideoRecorder(object):
         """
         for trial in frames:
             for frame in trial:
-                # frame = frame[0]
                 frame = cv2.resize(frame, self._video_shape)
                 # write the flipped frame
                 self._out.write(frame)
-
-                # cv2.imshow('frame', frame)
-                # cv2.waitKey(1)
 
     def release(self):
         # Release everything if job is finished
