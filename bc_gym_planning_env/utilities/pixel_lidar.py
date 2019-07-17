@@ -10,13 +10,10 @@ from __future__ import division
 
 import numpy as np
 
-
-from standalone_rgbd_pipeline._wrapper_pixel_raytrace_module import PixelRaytraceWrapper
-from shining_software.perception.pixel_raytracing_utils import raytrace_clean_on_input_map
-
 from bc_gym_planning_env.utilities.coordinate_transformations import normalize_angle
 from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
 from bc_gym_planning_env.utilities.scan_tools import scan_to_cartesian
+from bc_gym_planning_env import PixelRaytraceWrapper, raytrace_clean_on_input_map
 
 
 class PixelLidar(object):

@@ -623,7 +623,7 @@ raytrace_2d(
 
     py::safe_array_mut<int16_t, 2> numpy_markings({ (int)markings.size() / 2, 2 });
     int j = 0;
-    for (int i = 0; i < markings.size() / 2; ++i) {
+    for (uint i = 0; i < markings.size() / 2; ++i) {
         if (do_marking) {
             costmap(markings[j], markings[j+1]) = mark_value;
         }
@@ -721,7 +721,7 @@ void raytrace_clean_on_input_map(const py::safe_array_mut<uint8_t, 2>& input_map
 
 PYBIND11_MODULE(_pixel_raytracing_utils, m)
 {
-    m.def("raytrace_2d_impl",
+    m.def("raytrace_2d",
           &raytrace_2d,
           "costmap"_a.noconvert(),
           "line_defs"_a.noconvert(),
@@ -737,7 +737,7 @@ PYBIND11_MODULE(_pixel_raytracing_utils, m)
           "beam_width"_a
     );
 
-    m.def("raytrace_clean_on_input_map_impl",
+    m.def("raytrace_clean_on_input_map",
           &raytrace_clean_on_input_map,
           "input_map"_a.noconvert(),
           "clear_counts_map"_a.noconvert(),

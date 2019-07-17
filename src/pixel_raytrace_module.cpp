@@ -885,7 +885,7 @@ class PixelRaytraceBoostWrapper
   }
 };
 
-PYBIND11_MODULE(_wrapper_pixel_raytrace_module, m)
+PYBIND11_MODULE(_pixel_raytrace_module, m)
 {
   pybind11::class_<PixelRaytraceBoostWrapper>(m, "PixelRaytraceWrapper")
     .def(pybind11::init<>())
