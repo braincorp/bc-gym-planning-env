@@ -1,4 +1,3 @@
-#include "pixel_raytracing_utils.h"
 #include <cstdio>
 #include <iostream>
 #include <cstdint>
@@ -13,6 +12,7 @@
 #include <malloc.h>
 #include <range.h>
 #include <safe_array.h>
+
 namespace py = pybind11;
 using namespace pybind11::literals;
 
@@ -719,34 +719,32 @@ void raytrace_clean_on_input_map(const py::safe_array_mut<uint8_t, 2>& input_map
     }
 }
 
-
-void
-registerPixelRaytracingUtilsModule(py::module module)
+PYBIND11_MODULE(_pixel_raytracing_utils, m)
 {
-    module.def("raytrace_2d_impl",
-        &raytrace_2d,
-        "costmap"_a.noconvert(),
-        "line_defs"_a.noconvert(),
-        "idx"_a.noconvert(),
-        "ranges"_a.noconvert(),
-        "pixel_origin"_a.noconvert(),
-        "resolution"_a,
-        "raytrace_range"_a,
-        "obstacle_range"_a,
-        "do_clearing"_a,
-        "do_marking"_a,
-        "mark_value"_a,
-        "beam_width"_a
+    m.def("raytrace_2d_impl",
+          &raytrace_2d,
+          "costmap"_a.noconvert(),
+          "line_defs"_a.noconvert(),
+          "idx"_a.noconvert(),
+          "ranges"_a.noconvert(),
+          "pixel_origin"_a.noconvert(),
+          "resolution"_a,
+          "raytrace_range"_a,
+          "obstacle_range"_a,
+          "do_clearing"_a,
+          "do_marking"_a,
+          "mark_value"_a,
+          "beam_width"_a
     );
 
-    module.def("raytrace_clean_on_input_map_impl",
-        &raytrace_clean_on_input_map,
-        "input_map"_a.noconvert(),
-        "clear_counts_map"_a.noconvert(),
-        "line_defs"_a.noconvert(),
-        "idx"_a.noconvert(),
-        "origin_x"_a,
-        "origin_y"_a,
-        "obstacle_value"_a
+    m.def("raytrace_clean_on_input_map_impl",
+          &raytrace_clean_on_input_map,
+          "input_map"_a.noconvert(),
+          "clear_counts_map"_a.noconvert(),
+          "line_defs"_a.noconvert(),
+          "idx"_a.noconvert(),
+          "origin_x"_a,
+          "origin_y"_a,
+          "obstacle_value"_a
     );
 }

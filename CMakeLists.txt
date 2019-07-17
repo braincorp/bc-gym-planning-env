@@ -18,8 +18,8 @@ include_directories(
 )
 
 set(SOURCE_FILES
-        deps/pixel_raytrace_module.cpp
-        deps/pixel_raytracing_utils.cpp
+        src/pixel_raytrace_module.cpp
+        src/pixel_raytracing_utils.cpp
 )
 
 add_library(bc_gym_cpp_module SHARED ${PROJECT_SOURCE_DIR} ${SOURCE_FILES})
