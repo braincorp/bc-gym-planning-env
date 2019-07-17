@@ -260,7 +260,7 @@ class PixelRaytraceBoostWrapper
 
     pybind11::safe_array_mut<int16_t, 2> numpy_markings({ (int)markings.size() / 2, 2 });
     int j = 0;
-    for (int i = 0; i < markings.size() / 2; ++i) {
+    for (uint i = 0; i < markings.size() / 2; ++i) {
       if (do_marking) {
         writeable_costmap(markings[j], markings[j+1]) = mark_value;
       }
@@ -323,7 +323,6 @@ class PixelRaytraceBoostWrapper
     pybind11::safe_array_mut<int16_t, 1> closest_found_candidate({ 2 });
     double min_distance = std::numeric_limits<double>::infinity();
 
-    pybind11::safe_array_mut<uint8_t, 2>& writeable_blindspot_map = *const_cast<pybind11::safe_array_mut<uint8_t, 2>* > (&blindspot_map);
     pybind11::safe_array_mut<int16_t, 1>& writeable_closest_blindspot = *const_cast<pybind11::safe_array_mut<int16_t, 1>* > (&closest_blindspot);
 
     double current_positive_angle = positive_angle_min;
@@ -551,7 +550,6 @@ class PixelRaytraceBoostWrapper
     short x_inc = (end_x > origin_x) ? 1 : -1;
     short y_inc = (end_y > origin_y) ? 1 : -1;
     int error = dx - dy;
-    int current_cluster_size = 0;
     dx *= 2;
     dy *= 2;
 
@@ -646,7 +644,6 @@ class PixelRaytraceBoostWrapper
     int x_inc = (endpoint[0] > origin[0]) ? 1 : -1;
     int y_inc = (endpoint[1] > origin[1]) ? 1 : -1;
     int error = dx - dy;
-    int current_cluster_size = 0;
     dx *= 2;
     dy *= 2;
 
@@ -758,7 +755,7 @@ class PixelRaytraceBoostWrapper
     */
 
     pybind11::safe_array_mut<uint8_t, 2>& writeable_costmap = *const_cast<pybind11::safe_array_mut<uint8_t, 2>* > (&costmap);
-    int n_lines = origins.shape()[0];
+    uint n_lines = origins.shape()[0];
     std::set<std::tuple<int, int, uint8_t> > marked_pixels;  // use a set to remove duplicates and avoid incrementing twice the same pixel
 
     for (uint i = 0; i < n_lines; ++i) {
@@ -876,7 +873,7 @@ class PixelRaytraceBoostWrapper
 
     pybind11::safe_array_mut<int16_t, 2> numpy_markings({ (int)markings.size() / 3, 3 });
     int j = 0;
-    for (int i = 0; i < markings.size() / 3; ++i) {
+    for (uint i = 0; i < markings.size() / 3; ++i) {
       if (do_marking) {
         writeable_costmap(markings[j], markings[j+1]) = mark_value;
       }
