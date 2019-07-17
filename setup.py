@@ -2,7 +2,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 
 with open("README.md", "r") as f:
     long_description = f.read()
@@ -19,8 +19,9 @@ setup(
     license='Braincorp',
     install_requires=['numpy==1.13.3',
                       'gym',
-                      'attrs==19.1.0',
-                      'opencv-python'],
+                      'attrs>=19.1.0',
+                      'opencv-python',
+                      'requests'],
     package_data={'': ['input']},
     include_package_data=True,
         extras_require={
@@ -45,4 +46,14 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
     packages=find_packages(),
+    ext_package='bc_gym_planning_env',
+    ext_modules=[Extension('_bc_gym_cpp_module',
+                           extra_compile_args=['-std=c++1y', '-O3', '-Wall', '-fpic'],
+                           include_dirs=['deps/pybind11/include',
+                                         'inc'],
+                           sources=[
+                               'src/pixel_raytrace_module.cpp',
+                               'src/pixel_raytracing_utils.cpp',
+                               'src/python_wrapper.cpp'
+                           ])]
 )

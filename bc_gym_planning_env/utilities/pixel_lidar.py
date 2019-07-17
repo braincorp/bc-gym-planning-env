@@ -1,12 +1,7 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
-# ============================================================================
-# Copyright 2015 BRAIN Corporation. All rights reserved. This software is
-# provided to you under BRAIN Corporation's Beta License Agreement and
-# your use of the software is governed by the terms of that Beta License
-# Agreement, found at http://www.braincorporation.com/betalicense.
-# ============================================================================
+"""pixel_lidar.py
+Functions that simulate lidar using wrapper on cpp code
+"""
+from __future__ import print_function, absolute_import, division
 
 import numpy as np
 
@@ -17,19 +12,23 @@ from bc_gym_planning_env import PixelRaytraceWrapper, raytrace_clean_on_input_ma
 
 
 class PixelLidar(object):
-    '''
+    """
     Given a numpy map it returns the (x, y) points in the map
     that would be detected by a lidar in a given position
     and orientation
-    '''
+    """
     def __init__(self, pixel_radius, angle_range=None, blind_radius=0,
                  n_angles=None):
-        '''
-        pixel_radius: how far the lidar reaches, in pixels
-        angle_range: the angle range of the lidar, in radians (if None, 2*pi)
-        blind_radius: points closer than this (in pixels) won't
+        """
+         Given a numpy map it returns the (x, y) points in the map
+         that would be detected by a lidar in a given position
+         and orientation
+
+        :param pixel_radius: how far the lidar reaches, in pixels
+        :param angle_range: the angle range of the lidar, in radians (if None, 2*pi)
+        :param blind_radius: points closer than this (in pixels) won't
             be detected
-        n_angles: defines the angular resolution; it is the number of angles
+        :param n_angles: defines the angular resolution; it is the number of angles
             *in a whole circumference*; if the angle_range is not a whole circumference,
             the number of values you will get when calling get_scan_ranges
             will not be n_angles but the proportional part.
@@ -41,7 +40,7 @@ class PixelLidar(object):
             is rounded to these fixed directions. E.g., if n_angles is 4,
             the scans will be at fixed world orientations 0, 90, 180 and 270
             degrees, independent of robot orientation.
-        '''
+        """
         assert pixel_radius > 0, "Minimum pixel radius is 1"
 
         if n_angles is None:
@@ -64,15 +63,16 @@ class PixelLidar(object):
         self._raytrace_module = PixelRaytraceWrapper()
 
     def get_scan_points(self, im, center, orientation):
-        '''
-        im: 2d uint8 image with 254 for obstacles and anything else for empty space
-        center: (x, y), in pixels, in the image
-        orientation: in radians
+        """
+        get the scan points of the lidar at the center and orientation
+        :param im: 2d uint8 image with 254 for obstacles and anything else for empty space
+        :param center: (x, y), in pixels, in the image
+        :param orientation: in radians
 
-        Returns two n x 2 numpy array of (x, y) points, in pixel coordinates,
+        :return: two n x 2 numpy array of (x, y) points, in pixel coordinates,
          - encountered by the lidar.
          - cleared by the lidar (Warning: coordinates might fall outside the image coordinates!)
-        '''
+        """
         if self._half_range_idx is not None:
             or_idx = np.round(np.mod(orientation, 2 * np.pi) / self._d_angle).astype(np.int)
             idx = np.sort(np.mod(np.arange(or_idx - self._half_range_idx, or_idx + self._half_range_idx + 1), len(self._angles)))
@@ -90,12 +90,14 @@ class PixelLidar(object):
         return unique_result, unique_clearing
 
     def get_scan_ranges(self, im, center, orientation, lidar_angles=None):
-        '''
-        im: 2d uint8 image with 254 for obstacles and anything else for empty space
-        center: (x, y), in pixels, in the image
-        orientation: in radians
-        lidar_angles: custom angles of a lidar (otherwise angles follow the lidar's range_angular and resolution_angular construction params)
-        Returns:
+        """
+        get the scan ranges of the lidar at the center and orientation
+
+        :param im: 2d uint8 image with 254 for obstacles and anything else for empty space
+        :param center: (x, y), in pixels, in the image
+        :param orientation: in radians
+        :param lidar_angles: custom angles of a lidar (otherwise angles follow the lidar's range_angular and resolution_angular construction params)
+        :return: Tuple of
             - 2 x n array:
                 first row - array of the (ego) orientations (in radians) that correspond to each range
                 second row - array of ranges (in pixels) centered at the orientation angle.
@@ -104,7 +106,7 @@ class PixelLidar(object):
                 first row - array of the (ego) orientations (in radians) that correspond to each range
                 second row - array of clearing ranges centered at the orientation angle where rays didn't hit the target
                     The value of clearing range is pixel_radius
-        '''
+        """
 
         if lidar_angles is not None:
             selected_angles = (np.mod(orientation + lidar_angles, 2 * np.pi) / self._d_angle + 0.5)
@@ -138,14 +140,14 @@ class PixelLidar(object):
         return range_scan, clearing_scan
 
     def get_clear_space(self, im, center, orientation, lidar_angles=None):
-        '''
+        """
         This function will raytracing on the current costmap and return all the clear space
         :param im: 2d uint8 image with 254 for obstacles and anything else for empty space
         :param center: (x, y), in pixels, in the image
         :param orientation: in radians
         :param lidar_angles: custom angles of a lidar (otherwise angles follow the lidar's range_angular and resolution_angular construction params)
-        :return a map with the same size as im but filled with empty space
-        '''
+        :return: a map with the same size as im but filled with empty space
+        """
 
         part = np.zeros(im.shape, dtype=np.uint16)
 
@@ -168,9 +170,10 @@ class PixelLidar(object):
         return part
 
     def get_angles(self):
-        '''
-        return array of the (ego) orientations (in radians) that correspond to each range at 0 orientation
-        '''
+        """
+        get the angles of the lidar in ego coordinates
+        :return: array of the (ego) orientations (in radians) that correspond to each range at 0 orientation
+        """
         or_idx = np.int(np.mod(0, 2 * np.pi) / self._d_angle + 0.5)
         if self._half_range_idx is not None:
             selected_angles = np.mod(np.arange(or_idx - self._half_range_idx, or_idx + self._half_range_idx + 1), len(self._angles))
@@ -182,17 +185,18 @@ class PixelLidar(object):
 
 
 class VirtualLidar(object):
-    '''
+    """
     Wrapper on top of PixelLidar working in world coordinates
-    '''
+    """
     def __init__(self, range_max, range_angular, costmap, resolution_angular=None):
-        '''
+        """
+        Wrapper on top of PixelLidar working in world coordinates
+
         :param range_max: max lidar range, in meters
         :param range_angular: in radians, None for 2pi lidar
-        :param resolution_angular: in radians
         :param costmap: CostMap2D instance
-        :return:
-        '''
+        :param resolution_angular: in radians
+        """
         assert isinstance(costmap, CostMap2D)
         n_angles = None
         if resolution_angular is not None:
@@ -207,13 +211,15 @@ class VirtualLidar(object):
         self._resolution_angular = resolution_angular
 
     def get_scan_points(self, pose):
-        '''
+        """
+        get the scan points at the current pose
+
         :param pose: [x, y, angle], in world coordinates
 
         :return: two n x 2 numpy array of (x, y) points, in world coordinates,
          - encountered by the lidar.
          - cleared by the lidar (Warning: coordinates might fall outside the map coordinates!)
-        '''
+        """
         im = self._costmap.get_data()
         pixel_location = self._costmap.world_to_pixel(pose[:2])
         pixel_scan, clearing_pixel_scan = self._pixel_lidar.get_scan_points(im, pixel_location, pose[2])
@@ -222,22 +228,26 @@ class VirtualLidar(object):
         return world_scan, world_clearing_scan
 
     def get_scan_points_egocentric(self, pose):
-        '''
+        """
+        get the scan points from the lidar in egocentric coordinates
+
         :param pose: [x, y, angle], in world coordinates
-        :return:  two n x 2 numpy array of (x, y) points, in pose coordinates,
+        :return: two n x 2 numpy array of (x, y) points, in pose coordinates,
          - encountered by the lidar.
          - cleared by the lidar (Warning: coordinates might fall outside the map coordinates!)
-        '''
+        """
 
         ranges, clearing = self.get_scan_ranges(pose)
         return scan_to_cartesian(ranges[1, :], ranges[0, :]), scan_to_cartesian(clearing[1, :], clearing[0, :])
 
     def get_scan_ranges(self, pose, lidar_angles=None):
-        '''
+        """
+        get the scan ranges of the lidar
+
         :param pose: the pose of the lidar in the world as [x, y, angle]
         :param lidar_angles: custom angles of a lidar (otherwise angles follow the lidar's range_angular and resolution_angular construction params)
 
-        :return:
+        :return: two things,
             - 2 x n array:
                 first row - array of the (ego) orientations (in radians) that correspond to each range
                 second row - array of ranges (in pixels) centered at the orientation angle.
@@ -246,7 +256,7 @@ class VirtualLidar(object):
                 first row - array of the (ego) orientations (in radians) that correspond to each range
                 second row - array of clearing ranges centered at the orientation angle where rays didn't hit the target
                     The value of clearing range is pixel_radius
-        '''
+        """
         im = self._costmap.get_data()
         pixel_location = self._costmap.world_to_pixel(pose[:2])
         pixel_range_scan, clearing_range_pixel_scan = self._pixel_lidar.get_scan_ranges(im, pixel_location, pose[2], lidar_angles=lidar_angles)
@@ -255,12 +265,12 @@ class VirtualLidar(object):
         return pixel_range_scan, clearing_range_pixel_scan
 
     def get_clear_space(self, pose, lidar_angles=None):
-        '''
+        """
         This function will raytracing on the current costmap and return all the clear space
         :param pose: the pose of the lidar in the world as [x, y, angle]
         :param lidar_angles: custom angles of a lidar (otherwise angles follow the lidar's range_angular and resolution_angular construction params)
         :return: a map with the same size as im but filled with empty space
-        '''
+        """
 
         im = self._costmap.get_data()
         pixel_location = self._costmap.world_to_pixel(pose[:2])
@@ -269,28 +279,36 @@ class VirtualLidar(object):
         return part
 
     def get_angles(self):
+        """
+        get the pixel lidar angles
+        :return: angles of the pixel lidar
+        """
         return self._pixel_lidar.get_angles()
 
     def get_range_max(self):
-        '''
+        """
+        get the maximum range of the virtual lidar in meters
         :return: the maximum range of the virtual lidar in meters
-        '''
+        """
         return self._range_max
 
     def get_range_min(self):  # pylint: disable=no-self-use
-        '''
+        """
+        get the minimum range of the virtual lidar in meters
         :return: the minimum range of the virtual lidar in meters
-        '''
+        """
         return 0.
 
     def get_range_angular(self):
-        '''
+        """
+        get the angular range of the virtual lidar in radians
         :return: the angular range of the virtual lidar in radians
-        '''
+        """
         return self._range_angular
 
     def get_resolution_angular(self):
-        '''
+        """
+        get the angular resolution of the virtual lidar in radians/sample
         :return: the angular resolution of the virtual lidar in radians/sample
-        '''
+        """
         return self._resolution_angular

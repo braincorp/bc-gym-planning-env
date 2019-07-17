@@ -17,11 +17,10 @@ include_directories(
     "${PROJECT_SOURCE_DIR}/deps/pybind11/include"
 )
 
+set(SOURCE_FILES
+        src/pixel_raytrace_module.cpp
+        src/pixel_raytracing_utils.cpp)
 
-add_library(pixel_raytracing_utils SHARED ${PROJECT_SOURCE_DIR} src/pixel_raytracing_utils.cpp)
-target_link_libraries(pixel_raytracing_utils ${PYTHON_LIBRARIES})
-set_target_properties(pixel_raytracing_utils PROPERTIES SUFFIX ".so" PREFIX "_")
-
-add_library(pixel_raytrace_module SHARED ${PROJECT_SOURCE_DIR} src/pixel_raytrace_module.cpp)
-target_link_libraries(pixel_raytrace_module ${PYTHON_LIBRARIES})
-set_target_properties(pixel_raytrace_module PROPERTIES SUFFIX ".so" PREFIX "_")
+add_library(bc_gym_cpp_module SHARED ${PROJECT_SOURCE_DIR} ${SOURCE_FILES} src/python_wrapper.cpp)
+target_link_libraries(bc_gym_cpp_module ${PYTHON_LIBRARIES})
+set_target_properties(bc_gym_cpp_module PROPERTIES SUFFIX ".so" PREFIX "_")

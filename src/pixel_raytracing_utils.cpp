@@ -1,10 +1,10 @@
+#include "pixel_raytracing_utils.h"
+#include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 #include <cstdio>
 #include <iostream>
 #include <cstdint>
 #include <climits>
-#include <pybind11/pybind11.h>
-#include <pybind11/numpy.h>
-#include <pybind11/stl.h>
 #include <list>
 #include <assert.h>
 #include <cstddef>
@@ -15,7 +15,6 @@
 
 namespace py = pybind11;
 using namespace pybind11::literals;
-
 
 void
 clear_pixel_with_beam(
@@ -719,32 +718,32 @@ void raytrace_clean_on_input_map(const py::safe_array_mut<uint8_t, 2>& input_map
     }
 }
 
-PYBIND11_MODULE(_pixel_raytracing_utils, m)
+void registerPixelRaytracingUtilsModule(py::module module)
 {
-    m.def("raytrace_2d",
-          &raytrace_2d,
-          "costmap"_a.noconvert(),
-          "line_defs"_a.noconvert(),
-          "idx"_a.noconvert(),
-          "ranges"_a.noconvert(),
-          "pixel_origin"_a.noconvert(),
-          "resolution"_a,
-          "raytrace_range"_a,
-          "obstacle_range"_a,
-          "do_clearing"_a,
-          "do_marking"_a,
-          "mark_value"_a,
-          "beam_width"_a
+    module.def("raytrace_2d",
+               &raytrace_2d,
+               "costmap"_a.noconvert(),
+               "line_defs"_a.noconvert(),
+               "idx"_a.noconvert(),
+               "ranges"_a.noconvert(),
+               "pixel_origin"_a.noconvert(),
+               "resolution"_a,
+               "raytrace_range"_a,
+               "obstacle_range"_a,
+               "do_clearing"_a,
+               "do_marking"_a,
+               "mark_value"_a,
+               "beam_width"_a
     );
 
-    m.def("raytrace_clean_on_input_map",
-          &raytrace_clean_on_input_map,
-          "input_map"_a.noconvert(),
-          "clear_counts_map"_a.noconvert(),
-          "line_defs"_a.noconvert(),
-          "idx"_a.noconvert(),
-          "origin_x"_a,
-          "origin_y"_a,
-          "obstacle_value"_a
+    module.def("raytrace_clean_on_input_map",
+               &raytrace_clean_on_input_map,
+               "input_map"_a.noconvert(),
+               "clear_counts_map"_a.noconvert(),
+               "line_defs"_a.noconvert(),
+               "idx"_a.noconvert(),
+               "origin_x"_a,
+               "origin_y"_a,
+               "obstacle_value"_a
     );
 }

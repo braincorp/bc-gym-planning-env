@@ -1,4 +1,4 @@
-#include <pybind11/pybind11.h>
+#include "pixel_raytrace_module.h"
 #include <pybind11/numpy.h>
 
 #include <safe_array.h>
@@ -10,10 +10,10 @@
 
 #define PIXEL_DEBUG false
 
-class PixelRaytraceBoostWrapper
+class PixelRaytraceWrapper
 {
  public:
-  PixelRaytraceBoostWrapper() {
+  PixelRaytraceWrapper() {
   }
 
   void clear_pixel(short x, short y, bool swap_xy,
@@ -885,19 +885,19 @@ class PixelRaytraceBoostWrapper
   }
 };
 
-PYBIND11_MODULE(_pixel_raytrace_module, m)
+void registerPixelRaytraceModule(pybind11::module module)
 {
-  pybind11::class_<PixelRaytraceBoostWrapper>(m, "PixelRaytraceWrapper")
+  pybind11::class_<PixelRaytraceWrapper>(module, "PixelRaytraceWrapper")
     .def(pybind11::init<>())
-    .def("raytrace_2d", &PixelRaytraceBoostWrapper::raytrace_2d)
-    .def("raytrace_2d", &PixelRaytraceBoostWrapper::raytrace_2d_default_beam)
-    .def("raytrace_2d_shadows", &PixelRaytraceBoostWrapper::raytrace_2d_shadows)
-    .def("raytrace_2d_all_shadows", &PixelRaytraceBoostWrapper::raytrace_2d_all_shadows)
-    .def("raytrace_2d_blindspot", &PixelRaytraceBoostWrapper::raytrace_2d_blindspot)
-    .def("raytrace_2d_all_blindspot", &PixelRaytraceBoostWrapper::raytrace_2d_all_blindspot)
-    .def("raytrace_find_first_obstacle", &PixelRaytraceBoostWrapper::raytrace_find_first_obstacle)
-    .def("raytrace_clean_and_occupied", &PixelRaytraceBoostWrapper::raytrace_clean_and_occupied)
-    .def("raytrace_cliff", &PixelRaytraceBoostWrapper::raytrace_cliff)
-    .def("pixel_lidar", &PixelRaytraceBoostWrapper::pixel_lidar)
-    .def("raytrace_2d_glass", &PixelRaytraceBoostWrapper::raytrace_2d_glass);
+    .def("raytrace_2d", &PixelRaytraceWrapper::raytrace_2d)
+    .def("raytrace_2d", &PixelRaytraceWrapper::raytrace_2d_default_beam)
+    .def("raytrace_2d_shadows", &PixelRaytraceWrapper::raytrace_2d_shadows)
+    .def("raytrace_2d_all_shadows", &PixelRaytraceWrapper::raytrace_2d_all_shadows)
+    .def("raytrace_2d_blindspot", &PixelRaytraceWrapper::raytrace_2d_blindspot)
+    .def("raytrace_2d_all_blindspot", &PixelRaytraceWrapper::raytrace_2d_all_blindspot)
+    .def("raytrace_find_first_obstacle", &PixelRaytraceWrapper::raytrace_find_first_obstacle)
+    .def("raytrace_clean_and_occupied", &PixelRaytraceWrapper::raytrace_clean_and_occupied)
+    .def("raytrace_cliff", &PixelRaytraceWrapper::raytrace_cliff)
+    .def("pixel_lidar", &PixelRaytraceWrapper::pixel_lidar)
+    .def("raytrace_2d_glass", &PixelRaytraceWrapper::raytrace_2d_glass);
 }

@@ -1,3 +1,8 @@
+"""scan_tools.py
+Tools used to manipulate scan data
+"""
+from __future__ import print_function, absolute_import, division
+
 import numpy as np
 
 from bc_gym_planning_env.utilities.coordinate_transformations import project_points
