@@ -136,6 +136,7 @@ class Observation(Serializable):
         return not self.__eq__(other)
 
     def get_lidar_scan(self):
+        # pylint: disable=no-member
         """
         Measure LiDAR range scan.
         :return Tuple of
