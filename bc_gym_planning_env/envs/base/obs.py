@@ -139,9 +139,9 @@ class Observation(Serializable):
         # pylint: disable=no-member
         """
         Measure LiDAR range scan.
-        :return Tuple of
-            - array of the (ego) orientations (in radians) that correspond to each range
-            - array of ranges (in pixels) centered at the orientation angle.
+        :return: Tuple of
+            - first element: array of the (ego) orientations (in radians) that correspond to each range
+            - second element: array of ranges (in pixels) centered at the orientation angle.
         """
         assert self.sensor is not None, "LiDAR sensor is not defined!"
 
