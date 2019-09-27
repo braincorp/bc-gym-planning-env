@@ -9,11 +9,13 @@ from bc_gym_planning_env.robot_models.standard_robot_names_examples import Stand
 from bc_gym_planning_env.utilities.serialize import Serializable
 from bc_gym_planning_env.envs.base.reward import RewardParams
 from bc_gym_planning_env.envs.base.reward_provider_examples import RewardProviderExamples
+from bc_gym_planning_env.utilities.pixel_lidar import VirtualLidar
 
 
 @attr.s(frozen=True)
 class EnvParams(Serializable):
     """ Parametrization of the environment.  """
+    sensor = attr.ib(type=VirtualLidar, default=None)          # LiDAR observation model
     dt = attr.ib(type=float, default=0.05)                     # how much time passes between two observations
     goal_ang_dist = attr.ib(type=float, default=np.pi/2)       # how close angularly to goal to reach it
     goal_spat_dist = attr.ib(type=float, default=1.0)          # how close to goal to reach it
@@ -21,9 +23,9 @@ class EnvParams(Serializable):
     iteration_timeout = attr.ib(type=int, default=1200)        # how many timesteps to reach the goal
     path_limiter_max_dist = attr.ib(type=float, default=5.0)   # spatial horizon of path follower
     robot_name = attr.ib(
-        default=StandardRobotExamples.INDUSTRIAL_TRICYCLE_V1)             # name of the robot, e.g. determines footprint
+        default=StandardRobotExamples.INDUSTRIAL_TRICYCLE_V1)  # name of the robot, e.g. determines footprint
     resolution = attr.ib(default=0.03, type=float)             # spatial resolution
-    refine_path = attr.ib(default=True, type=bool)            # should we make path dense?
+    refine_path = attr.ib(default=True, type=bool)             # should we make path dense?
     path_delta = attr.ib(default=0.05, type=float)             # if we want to make path dense, make a point every 5cm
     pose_delay = attr.ib(default=0, type=int)                  # we perceive poses with how much delay
     control_delay = attr.ib(default=0, type=int)               # how much delay in perceived controls

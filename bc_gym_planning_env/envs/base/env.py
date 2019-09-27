@@ -337,7 +337,7 @@ class PlanEnv(Serializable):
             info (dict): contains auxiliary diagnostic information (e.g. helpful for debugging)
 
         :param action: (wheel_v, wheel_angle)
-        :return Tuple[Observation, float, bool, Dict]: the stuff env shuold return
+        :return Tuple[Observation, float, bool, Dict]: the stuff env should return
         """
 
         # Process the environment dynamics
@@ -353,6 +353,61 @@ class PlanEnv(Serializable):
         done = self._extract_done(self._state)
 
         return obs, reward, done, info
+
+    def simple_step(self, desired_pose):
+        """
+        Run one timestep of the planning environment given the next pose, until end of
+        episode is reached. This function does not take into account the robot's dynamic.
+
+        Returns:
+            observation (Observation): agent's observation of the current environment
+            reward (float) : amount of reward returned after previous action
+            done (boolean): whether the episode has ended, in which case further step() calls have no point
+            info (dict): contains auxiliary diagnostic information (e.g. helpful for debugging)
+
+        :param desired_pose array: [x, y, theta]
+        :return Tuple[Observation, float, bool, Dict]: the stuff env should return
+        """
+
+        # Go to the next robot pose
+        self._state = self._simple_resolve_state_transition(desired_pose, self._state)
+
+        reward = self._reward_provider.reward(self._state)
+
+        self._state.reward_provider_state = self._reward_provider.get_state()
+        self._state.path = self._reward_provider.get_current_path()
+
+        obs = self._extract_obs()
+        info = self._extract_info()
+        done = self._extract_done(self._state)
+
+        return obs, reward, done, info
+
+    def _simple_resolve_state_transition(self, desired_pose, state):
+        """
+        Mutate state of the environment based on the received next desired state.
+        :param desired_pose array: [x, y, theta]
+        :param state State: current state of the environment
+        :return State: the state of the environment after application of the transition function
+        """
+        pose = desired_pose
+
+        current_time = state.current_time + self._params.dt
+        current_iter = state.current_iter + 1
+
+        robot_state = self._robot.get_state()
+        robot_state.x = pose[0]
+        robot_state.y = pose[1]
+        robot_state.angle = pose[2]
+
+        state.current_time = current_time
+        state.current_iter = current_iter
+        state.robot_collided = state.robot_collided
+        state.pose = pose
+        state.path = self._reward_provider.get_current_path()
+        state.robot_state = robot_state
+
+        return state
 
     def _resolve_state_transition(self, action, state):
         """
@@ -423,7 +478,8 @@ class PlanEnv(Serializable):
             costmap=self._state.costmap,
             robot_state=self._state.robot_state,
             time=self._state.current_time,
-            dt=self._params.dt
+            dt=self._params.dt,
+            sensor=self._params.sensor
         )
 
     @staticmethod
