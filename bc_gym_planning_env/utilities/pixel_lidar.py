@@ -78,7 +78,7 @@ class PixelLidar(object):
             idx = np.sort(np.mod(np.arange(or_idx - self._half_range_idx, or_idx + self._half_range_idx + 1), len(self._angles)))
         else:
             idx = np.arange(len(self._line_defs))
-        detection = self._raytrace_module.pixel_lidar(im, self._line_defs, idx.astype(np.int32),
+        detection = self._raytrace_module.pixel_lidar(im.astype(np.ubyte), self._line_defs, idx.astype(np.int32),
                                                       center[0], center[1], 254)
         hits = detection[:, 0] >= 0
         result = detection[hits]
@@ -121,7 +121,7 @@ class PixelLidar(object):
 
         assert selected_angles.max() < self._line_defs.shape[0]
 
-        detection = self._raytrace_module.pixel_lidar(im, self._line_defs, selected_angles.astype(np.int32),
+        detection = self._raytrace_module.pixel_lidar(im.astype(np.ubyte), self._line_defs, selected_angles.astype(np.int32),
                                                       center[0], center[1], 254)
         hits = detection[:, 0] >= 0
         result = detection[hits]

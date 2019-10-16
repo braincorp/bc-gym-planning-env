@@ -9,17 +9,19 @@ import numpy as np
 from bc_gym_planning_env.utilities.costmap_2d import CostMap2D
 from bc_gym_planning_env.robot_models.robot_examples_factory import create_standard_robot
 from bc_gym_planning_env.utilities.serialize import Serializable
+from bc_gym_planning_env.utilities.pixel_lidar import VirtualLidar
 
 
 @attr.s(frozen=True, cmp=False)
 class Observation(Serializable):
     """ Type representing observation returned from env.step(action) """
-    pose = attr.ib(type=np.ndarray)                 # oriented 2d pose of the robot
-    path = attr.ib(type=np.ndarray, repr=False)     # oriented path to follow
-    costmap = attr.ib(type=CostMap2D)               # costmap showing obstacles
-    time = attr.ib(type=float)                      # what is the current timestamp
-    dt = attr.ib(type=float)                        # how much time passes between observations
-    robot_state = attr.ib(type=object)              # wheel_angle, measured_v, measured_w, steering_motor_command
+    pose = attr.ib(type=np.ndarray)                     # oriented 2d pose of the robot
+    path = attr.ib(type=np.ndarray, repr=False)         # oriented path to follow
+    costmap = attr.ib(type=CostMap2D)                   # costmap showing obstacles
+    time = attr.ib(type=float)                          # what is the current timestamp
+    dt = attr.ib(type=float)                            # how much time passes between observations
+    robot_state = attr.ib(type=object)                  # wheel_angle, measured_v, measured_w, steering_motor_command
+    sensor = attr.ib(type=VirtualLidar, default=None)   # LiDAR observation model
     VERSION = 1
 
     @classmethod
@@ -43,6 +45,7 @@ class Observation(Serializable):
         resu['robot_state'] = self.robot_state.serialize()
         resu['robot_type_name'] = self.robot_state.get_robot_type_name()
         resu['costmap'] = self.costmap.get_state()
+        resu['sensor'] = self.sensor
 
         return resu
 
@@ -91,6 +94,12 @@ class Observation(Serializable):
                 "robot_state is different! -> \n {} \n vs \n{}".format(self.robot_state, other.robot_state)
             )
 
+        if self.sensor != other.sensor:
+            are_identical = False
+            comparison.append(
+                "sensor is different! -> \n {} \n vs \n{}".format(self.sensor, other.sensor)
+            )
+
         if are_identical:
             comparison.append("Observations are identical.")
 
@@ -118,7 +127,23 @@ class Observation(Serializable):
         if self.robot_state != other.robot_state:
             return False
 
+        if self.sensor != other.sensor:
+            return False
+
         return True
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def get_lidar_scan(self):
+        # pylint: disable=no-member
+        """
+        Measure LiDAR range scan.
+        :return: Tuple of
+            - first element: array of the (ego) orientations (in radians) that correspond to each range
+            - second element: array of ranges (in pixels) centered at the orientation angle.
+        """
+        assert self.sensor is not None, "LiDAR sensor is not defined!"
+
+        pixel_range_scan, _ = self.sensor.get_scan_ranges(self.pose)
+        return pixel_range_scan[0, :], pixel_range_scan[1, :]
