@@ -306,7 +306,7 @@ class PlanEnv(Serializable):
         if mode not in ['human', 'rgb_array']:
             raise NotImplementedError
 
-        img = draw_environment(self._state.path, self._state.original_path, self._robot, self._state.costmap)
+        img = draw_environment(self._state.path, self._robot, self._state.costmap)
 
         if mode == 'human':
             return self._gui.display(img)

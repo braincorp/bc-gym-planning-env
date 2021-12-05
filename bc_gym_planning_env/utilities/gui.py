@@ -10,6 +10,14 @@ from sys import platform
 from bc_gym_planning_env.envs.base.action import Action
 
 
+cmd = """osascript -e '
+tell application "System Events"
+   tell application process \"Finder\"
+      set frontmost to true
+   end tell
+end tell
+'"""
+
 class OpenCVGui(object):
     """Display an image with OpenCV"""
     def __init__(self):
@@ -27,7 +35,7 @@ class OpenCVGui(object):
             cv2.moveWindow(self._window_name, 500, 200)
             if platform == "darwin":
                 # bring window to front
-                os.system('''/usr/bin/osascript -e 'tell app "Finder" to set frontmost of process "python" to true' ''')
+                os.system(cmd)
 
         cv2.imshow(self._window_name, image)
         cv2.waitKey(1)

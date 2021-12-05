@@ -29,6 +29,8 @@ class Wall(object):
     """ The most basic type of obstacle - a wall between two points. """
     from_pt = attr.ib(type=np.ndarray)
     to_pt = attr.ib(type=np.ndarray)
+    width = attr.ib(type=float, default=0.05)
+    cost = attr.ib(default=CostMap2D.LETHAL_OBSTACLE)
 
     def render(self, costmap):
         """
@@ -36,7 +38,7 @@ class Wall(object):
         :param costmap Costmap2D: Costmap to draw the wall on.
         :return Costmap2D: the costmap with the wall on it
         """
-        add_wall_to_static_map(costmap, self.from_pt, self.to_pt, width=costmap.get_resolution()*4)
+        add_wall_to_static_map(costmap, self.from_pt, self.to_pt, width=self.width, cost=self.cost)
         return costmap
 
 
