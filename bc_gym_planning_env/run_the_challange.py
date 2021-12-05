@@ -1,6 +1,4 @@
 import itertools
-
-import attr
 import numpy as np
 
 from bc_gym_planning_env.envs.base.action import Action
@@ -11,14 +9,12 @@ from bc_gym_planning_env.envs.t_junction_env import TJunction
 from bc_gym_planning_env.utilities.coordinate_transformations import normalize_angle
 
 
-class RandomActor:
-    rng: np.random.RandomState = attr.Factory(np.random.RandomState)
-
+class SimpleActor:
+    """ Just slam the gas! """
     def act(self, obs: Observation) -> Action:
-        forward_velocity = np.random.uniform(0, 0.6)
-        wanted_wheel_angle = np.random.uniform(-np.pi / 12.0, np.pi / 12.0)
-
-        return Action(command=np.array([forward_velocity, wanted_wheel_angle]))
+        forward_velocity = 0.5
+        wanted_wheel_angle = 0.0
+        return Action.from_cmds(forward_velocity, wanted_wheel_angle)
 
 
 if __name__ == '__main__':
@@ -36,7 +32,7 @@ if __name__ == '__main__':
             params=env_params
         )
 
-        actor = RandomActor()
+        actor = SimpleActor()
 
         done = False
         obs = env.reset()

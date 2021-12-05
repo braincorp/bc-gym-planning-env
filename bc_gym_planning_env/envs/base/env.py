@@ -223,7 +223,13 @@ class PlanEnv(Serializable):
         :param params EnvParams: parametrization of the environment
         """
         # Stateful things
-        self._robot = TricycleRobot(dimensions=get_dimensions_example(params.robot_name))
+        self._robot = TricycleRobot(
+            dimensions=get_dimensions_example(params.robot_name),
+            noise_parameters=dict(
+                alpha1=0.0, alpha2=0.0, alpha3=1.e-2,
+                alpha4=1.e-2, alpha5=1.e-3, alpha6=1.e-3
+            )
+        )
         reward_provider_example = get_reward_provider_example(params.reward_provider_name)
         self._reward_provider = reward_provider_example(params=params.reward_provider_params)
 
