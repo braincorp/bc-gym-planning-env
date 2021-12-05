@@ -30,7 +30,7 @@ class EnvParams(Serializable):
     state_delay = attr.ib(default=0, type=int)                 # state perception delay, in reality ~ 0.11s (2 steps)
 
     reward_provider_name = attr.ib(                            # name of the reward provider
-        default=RewardProviderExamples.CONTINUOUS_REWARD_PURE_PURSUIT)
+        default=RewardProviderExamples.CONTINUOUS_REWARD)
     reward_provider_params = attr.ib(                          # parameters of the reward provider
         default=attr.Factory(
             lambda self: RewardParams(

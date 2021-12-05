@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 from bc_gym_planning_env.utilities.path_tools import inscribed_radius
 from bc_gym_planning_env.utilities.map_drawing_utils import get_drawing_coordinates_from_physical, \
-    get_drawing_angle_from_physical, draw_world_map, draw_wide_path, prepare_canvas
+    get_drawing_angle_from_physical, draw_world_map, draw_wide_path, prepare_canvas, draw_trajectory
 
 
 def draw_robot(robot, image, x, y, angle, color, costmap, alpha=1.0, draw_steering_details=True):
@@ -28,7 +28,7 @@ def draw_robot(robot, image, x, y, angle, color, costmap, alpha=1.0, draw_steeri
                alpha=alpha, draw_steering_details=draw_steering_details)
 
 
-def draw_environment(path_to_follow, original_path, robot, costmap):
+def draw_environment(path_to_follow, robot, costmap):
     """
     Draw obstacles, path and a robot
     :param path_to_follow: numpy array of (x, y, angle) of a path left to follow
@@ -40,29 +40,17 @@ def draw_environment(path_to_follow, original_path, robot, costmap):
     """
     img = prepare_canvas(costmap.get_data().shape)
 
-    draw_wide_path(
-        img, original_path,
-        robot_width=2 * inscribed_radius(robot.get_footprint()),
-        origin=costmap.get_origin(),
-        resolution=costmap.get_resolution(),
-        color=(240, 240, 240)
-    )
+    draw_world_map(img, costmap.get_data())
 
-    if len(path_to_follow):
-        draw_wide_path(
-            img, path_to_follow,
-            robot_width=2 * inscribed_radius(robot.get_footprint()),
-            origin=costmap.get_origin(),
-            resolution=costmap.get_resolution(),
-            color=(220, 220, 220)
-        )
+    draw_trajectory(
+        img,
+        costmap.get_resolution(),
+        costmap.get_origin(),
+        path_to_follow,
+        thickness=1
+    )
 
     x, y, angle = robot.get_pose()
     draw_robot(robot, img, x, y, angle, color=(0, 100, 0), costmap=costmap)
-    draw_world_map(img, costmap.get_data())
-
-    for pose in path_to_follow:
-        x, y, angle = pose
-        draw_robot(robot, img, x, y, angle, color=(100, 0, 0), costmap=costmap, alpha=0.1, draw_steering_details=False)
 
     return img

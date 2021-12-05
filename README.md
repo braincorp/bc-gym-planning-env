@@ -16,6 +16,31 @@ while not done:
     observation, reward, done, info = env.step(action)
 ```
 
+Motion planning challange
+------------------------
+
+Here's a motion planning challange for you!
+
+To get started, please see `run_the_challange.py` script. In there you will see a motion planning experiment implemented
+in the "planning env" framework.
+
+The task is to implement an algorithm with an interface similiar
+to `SimpleActor` that is, one that has `.act`  function that maps `
+`Observation`to `Action`. Its job is to steer the robot from where it is currently
+to to the end of the path.
+
+Note that this is not "full black box RL" set up. Specifically, things that are OK to do include:
+- using explicit information about forward model of the robot (i.e. assume knowledge of the movement equations and their
+  parameters)
+- disabling noise of the system and implementing a solution to such a simplified problem first
+
+Nevertheless, in case someone wants to use RL, we have included code that 
+provides rewards for following sub-segments of the wanted path.
+
+Here's a visualization of our algorithm solving this challange in real-time.
+
+![bot-to-rght](img/bottom-right.gif) ![left-to-bot](img/left-bottom.gif)
+
 
 Statefullness of the env
 ------------------------

@@ -14,6 +14,10 @@ class Action(Serializable):
     VERSION = 1
     command = attr.ib(type=np.ndarray)
 
+    @classmethod
+    def from_cmds(cls, wanted_linear_velocity_of_baselink, wanted_front_wheel_angle):
+        return cls(command=np.array([wanted_linear_velocity_of_baselink, wanted_front_wheel_angle]))
+
     def __eq__(self, other):
         if not isinstance(other, Action):
             return False
